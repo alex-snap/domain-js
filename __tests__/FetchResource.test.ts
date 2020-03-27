@@ -3,7 +3,7 @@ import { FetchResource, DefaultFetchOptions } from '../src/FetchResource';
 
 // global;
 declare var global: any;
-let fetchResource: any;
+let fetchResource: TestingFetchResource;
 const timeOffset = (new Date()).getTimezoneOffset() * -1;
 const baseUrl = 'https://www.google.com/';
 const successResponseData = { data: 'success', _status: 200 };
