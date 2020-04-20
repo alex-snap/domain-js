@@ -26,3 +26,5 @@ describe('Set', () => {
     expect(a.a.c.b.d).toBe(2);
   });
 });
+
+// todo uuid, isString, isObject, isFunction
