@@ -60,17 +60,27 @@ export class BaseRepository {
       .then((res) => this.processResponse(res));
   }
 
-  public load(params: object = {}): Promise<any> {
-    const query = Object.assign({}, { params: this.defaultQueryParams }, params);
+  public load(params?: object): Promise<any> {
+    let query;
+    if (this.defaultQueryParams != null) {
+      query = Object.assign({}, { params: this.defaultQueryParams }, params);
+    } else {
+      query = params;
+    }
     return this.resource().get(query)
       .then((res) => this.processResponse(res));
   }
 
-  public loadById(id: string | number, params: object = {}): Promise<any> {
+  public loadById(id: string | number, params?: object): Promise<any> {
     if (id == null) {
       throw (new Error('BaseRepository#loadById(): id should not be null or undefined'));
     }
-    const query = Object.assign({}, { params: this.defaultQueryParams }, params);
+    let query;
+    if (this.defaultQueryParams != null) {
+      query = Object.assign({}, { params: this.defaultQueryParams }, params);
+    } else {
+      query = params;
+    }
     return this.resource(id).get(query)
       .then((res) => this.processResponse(res));
   }
@@ -134,11 +144,13 @@ export class BaseRepository {
 
   protected async processResponse(response: any): Promise<any> {
     let result = { meta: null } as any;
-
+    
     let responseJson;
     try {
       responseJson = response && await response.json();
-    } catch (e) { }
+    } catch (e) { 
+      // nothing
+    }
     if (!responseJson) {
       return;
     }
@@ -164,6 +176,10 @@ export class BaseRepository {
     return result;
   }
 
+  public setSettings(settings: RepositorySettings): void {
+    this.settings = settings;
+  }
+
   /**
    * Private helpers methods
    */
@@ -173,7 +189,11 @@ export class BaseRepository {
       return entityData;
     }
 
-    return { ...entityData, ...this.defaultQueryParams };
+    if (this.defaultQueryParams != null) {
+      return { ...entityData, ...this.defaultQueryParams };
+    }
+
+    return entityData;
   }
 
   private resolveResourceParamLiteral(param: any) {

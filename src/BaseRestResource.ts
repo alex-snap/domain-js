@@ -34,7 +34,7 @@ export class BaseRestResource {
     return new this.Constructor(this.resource, baseUrl, this.options);
   }
 
-  public getRequestResource() {
+  public getRequestResource(): BaseResource {
     return this.resource;
   }
 
