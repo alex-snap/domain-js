@@ -41,7 +41,7 @@ export const DefaultFetchOptions: FetchOptions = {
   redirect: 'follow',
   referrer: 'client',
   timeOffset: true,
-  handleError: null,
+  handleError: undefined,
   queryParamsDecodeMode: 'comma'
 };
 
