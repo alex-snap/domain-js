@@ -1,14 +1,13 @@
 import 'jest';
 import { BaseRepository } from '../src/BaseRepository';
 import { BaseRestResource } from '../src/BaseRestResource';
-import { BaseResource } from '../src/interfaces/BaseResource';
 
 let testRepository: BaseRepository;
 let fakeRestResource: BaseRestResource;
 let fakeChildRestResource: BaseRestResource;
 
 const successResourceResponse = {
-  status: '200',
+  _status: '200',
   json: jest.fn().mockImplementation(() => Promise.resolve({ data: 'any' }))
 }
 
