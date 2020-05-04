@@ -17,6 +17,10 @@ export interface FetchOptions {
   handleError?: () => any
   queryParamsDecodeMode?: 'comma' | 'array'
   params?: any
+  // todo 
+  // Добавить проверку перед тем как отправить запрос
+  // можно ли его слать (пример, если нет интернета или любое другое условие)
+  // то есть перехватить и вернуть другую ошибку
 }
 
 export interface FetchRequestOptions {
