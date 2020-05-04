@@ -1,14 +1,22 @@
 {
   "name": "domainjs",
   "version": "1.0.0",
-  "description": "Generics classes for managing entities and collections by async requests",
   "main": "dist/index.js",
+  "types": "dist/src/index.d.ts",
+  "description": "Generics classes for managing entities and collections by async requests",
   "scripts": {
     "build": "webpack --mode production",
     "test": "jest",
-    "test:watch:all": "jest --watchAll --verbose"
+    "test:watch:all": "jest --watchAll --verbose",
+    "prepare" : "npm run build",
+    "prepublishOnly" : "npm run test",
+    "version" : "git add -A src",
+    "postversion" : "git push && git push --tags"
   },
-  "repository": "https://github.com/alex-snap/domain-js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex-snap/domain-js.git"
+  },
   "author": "Alexey Ryabov",
   "license": "MIT",
   "devDependencies": {
@@ -26,5 +34,11 @@
   },
   "engines": {
     "node": "13.9.0"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/alex-snap/domain-js/issues"
+  },
+  "homepage": "https://github.com/alex-snap/domain-js#readme",
+  "keywords": [],
+  "files": ["dist/**/*"]
 }

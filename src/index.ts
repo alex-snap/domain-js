@@ -1,3 +1,9 @@
-const bool = (max: any, min: any) => Boolean(Math.round(Math.random()));
+export * from './BaseRepository';
+export * from './BaseRepositoryBuilder';
+export * from './BaseRestResource';
+export * from './FetchResource';
+export * from './StorageResource';
 
-export default bool;
+export * from './data-mapper/index';
+export * from './interfaces/BaseResource';
+export * from './interfaces/Storage';
