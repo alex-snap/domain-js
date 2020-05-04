@@ -1,6 +1,6 @@
 import { BaseRepository } from "./BaseRepository";
 import { BaseRestResource } from "./BaseRestResource";
-import { BaseDataMapper } from "./BaseDataMapper";
+import { BaseDataMapper } from "./data-mapper/index";
 
 export class BaseRepositoryBuilder {
   constructor(

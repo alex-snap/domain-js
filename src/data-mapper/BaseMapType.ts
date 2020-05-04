@@ -5,13 +5,51 @@ import { BaseAttrMapConfig } from "./interfaces/BaseAttrMapConfig";
 export class BaseMapType {
 
   static number = BaseMapType.decorateWithAsAttrMap({
-    encode: (value) => value != null ? Number(value) : value,
-    decode: (value) => value != null ? Number(value) : value,
+    encode: (value) => {
+      if (value != null) {
+        if (typeof value === 'string' || typeof value === 'number') {
+          return Number(value);
+        }
+        return Number.NaN;
+      }
+      return value;
+    },
+    decode: (value) => {
+      if (value != null) {
+        if (typeof value === 'string' || typeof value === 'number') {
+          return Number(value);
+        }
+        return null;
+      }
+      return value;
+    },
   });
 
   static string = BaseMapType.decorateWithAsAttrMap({
-    encode: (value) => value != null ? String(value) : value,
-    decode: (value) => value != null ? String(value) : value,
+    encode: (value) => {
+      if (value != null) {
+        if (value instanceof Date) {
+          return value.toISOString();
+        }
+        if (isObject(value) || Array.isArray(value)) {
+          return JSON.stringify(value);
+        }
+        return String(value);
+      }
+      return value;
+    },
+    decode: (value) => {
+      if (value != null) {
+        if (value instanceof Date) {
+          return value.toISOString();
+        }
+        if (isObject(value) || Array.isArray(value)) {
+          return JSON.stringify(value);
+        }
+        return String(value);
+      }
+      return value;
+    },
   });
 
   static bool = BaseMapType.decorateWithAsAttrMap({
@@ -36,29 +74,67 @@ export class BaseMapType {
   });
 
   static dateTime = BaseMapType.decorateWithAsAttrMap({
-    encode: (value: string): Date | any => {
-      if (value != null) return new Date(value);
+    encode: (value: any): Date | any => {
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+      if (typeof value === 'boolean' || isObject(value)) {
+        return null;
+      }
+      if (value != null) {
+        return new Date(value).toISOString();
+      }
       return value;
     },
     decode: (value: Date | any) => {
-      if (value instanceof Date) return value.toString();
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+      if (typeof value === 'boolean' || isObject(value)) {
+        return null;
+      }
+      if (value != null) {
+        return new Date(value).toISOString();
+      }
       return value;
     }
   });
 
-  static arrayOf(mappingStrategy?: object): BaseMappingMethod {
+  static arrayOf(mappingStrategy?: any|BaseMappingMethod): BaseMappingMethod {
     return BaseMapType.decorateWithAsAttrMap({
       encode: (values) => {
         if (values && values.length && mappingStrategy) {
-          return values.map((value: any) => BaseMapType.map(value, mappingStrategy));
+          return values.map((value: any) => {
+            if (mappingStrategy && mappingStrategy.hasOwnProperty('encode')) {
+              return mappingStrategy.encode(value);
+            }
+            if (isObject(value)) {
+              return BaseMapType.map(value, mappingStrategy);
+            }
+            return null;
+          });
         }
-        return values;
+        if (values == null) {
+          return values;
+        }
+        return [values];
       },
       decode: (values) => {
         if (values && values.length && mappingStrategy) {
-          return values.map((value: any) => BaseMapType.reverseMap(value, mappingStrategy));
+          return values.map((value: any) => {
+            if (mappingStrategy && mappingStrategy.hasOwnProperty('encode')) {
+              return mappingStrategy.encode(value);
+            }
+            if (isObject(value)) {
+              return BaseMapType.reverseMap(value, mappingStrategy);
+            }
+            return null;
+          });
         }
-        return values;
+        if (values == null) {
+          return values;
+        }
+        return [values];
       }
     });
   }
@@ -108,35 +184,35 @@ export class BaseMapType {
     return BaseMapType.reverseMap(source, mappingStrategy) as T;
   }
 
-  static resolveDecodedValuePath(BaseAttrMapConfig: object | string) {
-    if (isString(BaseAttrMapConfig)) {
-      return BaseAttrMapConfig;
+  static resolveDecodedValuePath(attrMapConfig: object | string, resultAttributePath: string) {
+    if (isString(attrMapConfig)) {
+      return attrMapConfig;
     }
-    if (isObject(BaseAttrMapConfig) && isString((BaseAttrMapConfig as any).map)) {
-      return (BaseAttrMapConfig as any).map;
+    if (isObject(attrMapConfig) && isString((attrMapConfig as any).map)) {
+      return (attrMapConfig as any).map;
     }
-    return null;
+    return resultAttributePath;
   }
 
-  static encodeAttribute(decodedObject: object,
-    BaseAttrMapConfig: BaseAttrMapConfig,
+  static encodeAttribute(
+    decodedObject: object,
+    attrMapConfig: BaseAttrMapConfig,
     decodedAttributePath: string) {
-
     const decodedValue = get(decodedObject, decodedAttributePath);
-    if (isFunction(BaseAttrMapConfig.encode)) {
-      return BaseAttrMapConfig.encode(decodedValue, decodedObject)
+    if (isFunction(attrMapConfig.encode)) {
+      return attrMapConfig.encode(decodedValue, decodedObject)
     }
 
     return decodedValue;
   }
 
   static decodeAttribute(encodedObject: any,
-    BaseAttrMapConfig: BaseAttrMapConfig,
+    attrMapConfig: BaseAttrMapConfig,
     encodedAttributePath: string) {
 
     const encodedValue = encodedObject[encodedAttributePath];
-    if (isFunction(BaseAttrMapConfig.decode)) {
-      return BaseAttrMapConfig.decode(encodedValue, encodedObject);
+    if (isFunction(attrMapConfig.decode)) {
+      return attrMapConfig.decode(encodedValue, encodedObject);
     }
 
     return encodedValue;
@@ -149,13 +225,13 @@ export class BaseMapType {
 
     while (strategyKeysCount--) {
       const encodedAttributePath = strategyKeys[strategyKeysCount];
-      const BaseAttrMapConfig = strategy[encodedAttributePath];
-      const decodedAttributePath = this.resolveDecodedValuePath(BaseAttrMapConfig);
+      const attrMapConfig = strategy[encodedAttributePath];
+      const decodedAttributePath = BaseMapType.resolveDecodedValuePath(attrMapConfig, encodedAttributePath);
 
       if (decodedAttributePath) {
-        const decodedValue = this.decodeAttribute(
+        const decodedValue = BaseMapType.decodeAttribute(
           encodedObject,
-          BaseAttrMapConfig,
+          attrMapConfig,
           encodedAttributePath
         );
 
@@ -175,13 +251,12 @@ export class BaseMapType {
 
     while (strategyKeysCount--) {
       const resultAttributePath = strategyKeys[strategyKeysCount];
-      const BaseAttrMapConfig = strategy[resultAttributePath];
-      const decodedAttributePath = this.resolveDecodedValuePath(BaseAttrMapConfig);
-
+      const attrMapConfig = strategy[resultAttributePath];
+      const decodedAttributePath = BaseMapType.resolveDecodedValuePath(attrMapConfig, resultAttributePath);
       if (resultAttributePath) {
-        const encodedValue = this.encodeAttribute(
+        const encodedValue = BaseMapType.encodeAttribute(
           decodedObject,
-          BaseAttrMapConfig,
+          attrMapConfig,
           decodedAttributePath
         );
 

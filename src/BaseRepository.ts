@@ -1,5 +1,5 @@
 import { BaseRestResource } from "./BaseRestResource";
-import { BaseDataMapper } from "./BaseDataMapper";
+import { BaseDataMapper } from "./data-mapper/index";
 
 import { isObject } from "./helpers";
 

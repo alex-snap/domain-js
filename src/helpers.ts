@@ -1,16 +1,19 @@
 const hasOwnProp = Object.prototype.hasOwnProperty;
 
 export function get(obj: any, path: string) {
-  let keys = Array.isArray(path) ? path : path.split('.');
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
-    if (!obj || !hasOwnProp.call(obj, key)) {
-      obj = undefined;
-      break;
+  if (path != null) {
+    let keys = Array.isArray(path) ? path : path.split('.');
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i];
+      if (!obj || !hasOwnProp.call(obj, key)) {
+        obj = undefined;
+        break;
+      }
+      obj = obj[key];
     }
-    obj = obj[key];
+    return obj;
   }
-  return obj;
+  return void 0;
 }
 
 export function set(obj: any, path: string, value: any) {
