@@ -1,6 +1,6 @@
 {
   "name": "@snap-alex/domain-js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "description": "Generics classes for managing entities and collections by async requests",
@@ -8,10 +8,10 @@
     "build": "webpack --mode production",
     "test": "jest",
     "test:watch:all": "jest --watchAll --verbose",
-    "prepare" : "npm run build",
-    "prepublishOnly" : "npm run test",
-    "version" : "git add -A src",
-    "postversion" : "git push && git push --tags"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test",
+    "version": "git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -40,5 +40,7 @@
   },
   "homepage": "https://github.com/alex-snap/domain-js#readme",
   "keywords": [],
-  "files": ["dist/**/*"]
+  "files": [
+    "dist/**/*"
+  ]
 }
