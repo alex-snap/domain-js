@@ -25,8 +25,7 @@ export class BaseRepository {
 
   constructor(
     private restResource: BaseRestResource,
-    private DataMapper?: typeof BaseDataMapper
-  ) {
+    private dataMapper?: BaseDataMapper<any, any>) {
   }
 
   public save(entity: object): Promise<any> {
@@ -133,8 +132,8 @@ export class BaseRepository {
 
   protected prepareEntityForRequest(entity: object): object {
     let result = entity;
-    if (this.DataMapper) {
-      result = this.DataMapper.decode(entity);
+    if (this.dataMapper) {
+      result = this.dataMapper.decode(entity);
     }
     if (this.requestEntityWrap) {
       result = this.requestEntityWrap(entity);
@@ -225,8 +224,8 @@ export class BaseRepository {
   }
 
   private encodeEntity(entityData: any): object {
-    if (this.DataMapper) {
-      return this.DataMapper.encode(entityData);
+    if (this.dataMapper) {
+      return this.dataMapper.encode(entityData);
     }
 
     return entityData;
