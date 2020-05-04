@@ -148,14 +148,14 @@ export class BaseRepository {
     try {
       responseJson = response && await response.json();
     } catch (e) { 
-      // nothing
+      responseJson = response;
     }
     if (!responseJson) {
       return;
     }
 
     let data;
-    let meta = { responseStatus: response.status };
+    let meta = { responseStatus: response._status };
 
     if (responseJson.data && Array.isArray(responseJson.data)) {
       data = responseJson.data;
