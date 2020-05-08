@@ -1,7 +1,8 @@
-import 'jest';
 import { BaseRepository } from '../src/BaseRepository';
 import { BaseRestResource } from '../src/BaseRestResource';
 
+// global
+declare var global: any;
 let testRepository: BaseRepository;
 let fakeRestResource: BaseRestResource;
 let fakeChildRestResource: BaseRestResource;

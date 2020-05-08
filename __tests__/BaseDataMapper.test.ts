@@ -1,4 +1,3 @@
-import 'jest';
 import { BaseMapType, BaseDataMapper } from '../src/data-mapper/index';
 
 interface Encoded {
@@ -183,7 +182,7 @@ describe('number', () => {
 });
 
 describe('string', () => {
-  
+
   // Encode
   // -----------------
   it('should encode string to string', () => {
@@ -263,7 +262,7 @@ describe('string', () => {
 });
 
 describe('bool', () => {
-  
+
   // Encode
   // -----------------
   it('should encode boolean to boolean', () => {
@@ -384,7 +383,7 @@ describe('bool', () => {
 });
 
 describe('datetime', () => {
-  
+
   // Encode
   // -----------------
   it('on encode boolean should delete property', () => {
@@ -465,7 +464,7 @@ describe('datetime', () => {
 });
 
 describe('arrayOf', () => {
-  
+
   // Encode
   // -----------------
   it('encode boolean should create array of boolean', () => {

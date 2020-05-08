@@ -1,4 +1,3 @@
-import 'jest';
 import { BaseRestResource } from '../src/BaseRestResource';
 import { BaseResource } from '../src/interfaces/BaseResource';
 
@@ -21,9 +20,9 @@ beforeEach(() => {
     patch: createResourceMockResponse(successResponseData),
     get: createResourceMockResponse(successResponseData),
     delete: createResourceMockResponse(),
-    setHeaders: () => {},
-    clearHeaders: () => {},
-    setBasePath: () => {},
+    setHeaders: () => { },
+    clearHeaders: () => { },
+    setBasePath: () => { },
     resolveDestination: () => resourceChildPath,
     getAllEntities: createResourceMockResponse([])
   };
@@ -42,7 +41,7 @@ describe('BaseRestResource instance', () => {
 });
 
 describe('Create method', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(testRestResource.create).toBeInstanceOf(Function);
   });
   it('should called with expected params', async () => {
@@ -61,7 +60,7 @@ describe('Create method', () => {
 });
 
 describe('Update method', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(testRestResource.update).toBeInstanceOf(Function);
   });
   it('should called with expected params', async () => {
@@ -80,7 +79,7 @@ describe('Update method', () => {
 });
 
 describe('Patch method', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(testRestResource.patch).toBeInstanceOf(Function);
   });
   it('should called with expected params', async () => {
@@ -99,7 +98,7 @@ describe('Patch method', () => {
 });
 
 describe('Get method', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(testRestResource.get).toBeInstanceOf(Function);
   });
   it('should called with expected params', async () => {
@@ -118,7 +117,7 @@ describe('Get method', () => {
 });
 
 describe('Delete method', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(testRestResource.delete).toBeInstanceOf(Function);
   });
   it('should called with expected params', async () => {
@@ -135,7 +134,7 @@ describe('Delete method', () => {
 });
 
 describe('Child method', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(testRestResource.child).toBeInstanceOf(Function);
   });
   it('should create new BaseRestResource instance', () => {
@@ -159,7 +158,7 @@ describe('Child method', () => {
 });
 
 describe('GetRequestResource method', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(testRestResource.getRequestResource).toBeInstanceOf(Function);
   });
   it('should return base resource', () => {
