@@ -1,4 +1,3 @@
-import 'jest';
 import { get, set } from '../src/helpers';
 
 describe('Get', () => {

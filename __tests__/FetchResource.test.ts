@@ -1,4 +1,3 @@
-import 'jest';
 import { FetchResource, DefaultFetchOptions } from '../src/FetchResource';
 
 // global;
@@ -55,12 +54,12 @@ describe('FetchResource instance', () => {
 });
 
 describe('Post request', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.post).toBeInstanceOf(Function);
   });
   it('should receive success response', async () => {
     try {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.post('test_url', { data: 1 });
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({
@@ -87,12 +86,12 @@ describe('Post request', () => {
 });
 
 describe('Put request', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.put).toBeInstanceOf(Function);
   });
   it('should receive success response', async () => {
     try {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.put('test_url', { data: 1 });
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({
@@ -119,12 +118,12 @@ describe('Put request', () => {
 });
 
 describe('Patch request', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.patch).toBeInstanceOf(Function);
   });
   it('should receive success response', async () => {
     try {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.patch('test_url', { data: 1 });
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({
@@ -151,12 +150,12 @@ describe('Patch request', () => {
 });
 
 describe('Get request', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.get).toBeInstanceOf(Function);
   });
   it('should receive success response', async () => {
     try {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.get('test_url');
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ method: 'get' }));
@@ -178,29 +177,29 @@ describe('Get request', () => {
     }
   });
   it('should pass query params in request', async () => {
-    const queryString = `${baseUrl}test_url?timeoffset=${timeOffset}&page=1&per_page=10&array=1,2,3`;
+    const queryString = `${baseUrl}test_url/?timeoffset=${timeOffset}&page=1&per_page=10&array=1,2,3`;
     const expectedUrl = expect.stringContaining(queryString);
-    await fetchResource.get('test_url', { params: { page: 1, per_page: 10, array: [1,2,3] } });
+    await fetchResource.get('test_url', { params: { page: 1, per_page: 10, array: [1, 2, 3] } });
     expect(global.fetch)
       .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ method: 'get' }));
   })
   it('should pass query params array as array in request', async () => {
     const queryTestfetchResource = new TestingFetchResource(baseUrl, { queryParamsDecodeMode: 'array' });
-    const queryString = `${baseUrl}test_url?timeoffset=${timeOffset}&page=1&per_page=10&array[]=1&array[]=2&array[]=3`;
+    const queryString = `${baseUrl}test_url/?timeoffset=${timeOffset}&page=1&per_page=10&array[]=1&array[]=2&array[]=3`;
     const expectedUrl = expect.stringContaining(queryString);
-    await queryTestfetchResource.get('test_url', { params: { page: 1, per_page: 10, array: [1,2,3] } });
+    await queryTestfetchResource.get('test_url', { params: { page: 1, per_page: 10, array: [1, 2, 3] } });
     expect(global.fetch)
       .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ method: 'get' }));
   })
 });
 
 describe('Delete request', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.delete).toBeInstanceOf(Function);
   });
   it('should receive success response', async () => {
     try {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.delete('test_url');
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ method: 'delete' }));
@@ -224,21 +223,21 @@ describe('Delete request', () => {
 });
 
 describe('Set headers', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.setHeaders).toBeInstanceOf(Function);
   });
 
   it('should store headers', () => {
-    const headers = {'Authorization': 'X'};
+    const headers = { 'Authorization': 'X' };
     fetchResource.setHeaders(headers);
     const savedHeaders = fetchResource._getDefaultOptions().headers;
     expect(savedHeaders).toEqual(headers);
   });
 
   it('should send headers on each request', async () => {
-    const headers = {'Authorization': 'X'};
+    const headers = { 'Authorization': 'X' };
     fetchResource.setHeaders(headers);
-    const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+    const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
     await fetchResource.get('test_url');
     expect(global.fetch)
       .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ headers: expect.objectContaining(headers) }));
@@ -246,11 +245,11 @@ describe('Set headers', () => {
 });
 
 describe('Clear headers', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.clearHeaders).toBeInstanceOf(Function);
   });
   it('should clear headers', () => {
-    const headers = {'Authorization': 'X'};
+    const headers = { 'Authorization': 'X' };
     fetchResource.setHeaders(headers);
     fetchResource.clearHeaders();
     const savedHeaders = fetchResource._getDefaultOptions().headers;
@@ -259,10 +258,10 @@ describe('Clear headers', () => {
 });
 
 describe('Set base path dynamically', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.setBasePath).toBeInstanceOf(Function);
   });
-  
+
   it('should change base path', async () => {
     const newBasePath = 'https://www.newBasePath.ru/';
     const expectedUrl = expect.stringContaining(`${newBasePath}test_url`);
@@ -273,7 +272,7 @@ describe('Set base path dynamically', () => {
 });
 
 describe('Resolve destination', () => {
-  it('method should be defined', () => { 
+  it('method should be defined', () => {
     expect(fetchResource.resolveDestination).toBeInstanceOf(Function);
   });
 
