@@ -175,7 +175,7 @@ export class FetchResource implements BaseResource {
     if (this.baseUrl == null) {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
-    const urlPart = `/${url}`;
+    const urlPart = `/${url}/`;
     let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, "$1");
     if (this.defaultOptions.timeOffset) {
       const timeOffset = (new Date()).getTimezoneOffset() * -1;
