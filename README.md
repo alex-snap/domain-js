@@ -46,7 +46,7 @@ Already you can use resource for requests
 import { BaseRestResource } from "@snap-alex/domain-js";
 import userResource './users/userResource';
 
-// GET on https://www.my-base-url.com/users
+// GET on https://www.my-base-url.com/users?query=Tom
 userResource.get({ query: 'Tom' });
 // etc.
 ```
