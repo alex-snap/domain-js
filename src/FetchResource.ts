@@ -1,4 +1,5 @@
 import { BaseResource } from "./interfaces/BaseResource";
+import { ContentTypes } from "./enums/ContentTypes";
 
 export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
 
@@ -6,7 +7,7 @@ export interface FetchOptions {
   isFormData?: boolean
   headers?: HeadersInit
   responseType?: string
-  contentType?: string
+  contentType?: ContentTypes
   accessType?: string
   mode?: RequestMode
   cache?: RequestCache
@@ -37,7 +38,7 @@ export interface FetchRequestOptions {
 export const DefaultFetchOptions: FetchOptions = {
   headers: {},
   responseType: 'json',
-  contentType: 'json',
+  contentType: ContentTypes.JSON,
   accessType: 'json',
   mode: 'same-origin',
   cache: 'default',
@@ -128,9 +129,9 @@ export class FetchResource implements BaseResource {
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {
     if (options) {
-      if (options.isFormData) {
+      if (options.contentType === ContentTypes.FORM_DATA) {
         return this.transformToFormData(body);
-      } else if (options.contentType === 'json') {
+      } else if (options.contentType === ContentTypes.JSON) {
         return JSON.stringify(body);
       }
     }
@@ -208,9 +209,9 @@ export class FetchResource implements BaseResource {
 
   private resolveHeaders(options: FetchOptions) {
     const additionalHeaders = {} as any;
-    if (options.contentType === 'json') {
+    if (options.contentType === ContentTypes.JSON) {
       additionalHeaders['Content-Type'] = 'application/json';
-    } else if (options.contentType === 'form-data') {
+    } else if (options.contentType === ContentTypes.FORM_DATA) {
       additionalHeaders['Content-Type'] = 'multipart/form-data';
     }
     if (options.responseType === 'json') {
