@@ -6,6 +6,7 @@
   "description": "Generics classes for managing entities and collections by async requests",
   "scripts": {
     "build": "webpack --mode production",
+    "build:dev": "webpack --mode development --config webpack.config.dev.js",
     "test": "jest",
     "test:watch:all": "jest --watchAll --verbose",
     "prepare": "npm run build",
