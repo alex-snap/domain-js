@@ -39,6 +39,25 @@ afterEach(() => {
   delete global.fetch;
 });
 
+describe('FetchResource options', () => {
+  it('trailing slash', async () => {
+    try {
+      const testFetchResource = new TestingFetchResource(baseUrl, { trailingSlash: false });
+      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const response = await testFetchResource.post('test_url', { data: 1 });
+      expect(global.fetch)
+        .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({
+          method: 'post',
+          body: { data: 1 }
+        }));
+      expect(response).toBeDefined()
+      expect(response).toEqual(successResponseData);
+    } catch (error) {
+      expect(error).toBeNull();
+    }
+  });
+});
+
 describe('FetchResource instance', () => {
   it('fetchResource instance of FetchResource', async () => {
     expect(fetchResource).toBeInstanceOf(FetchResource);
