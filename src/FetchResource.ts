@@ -5,6 +5,7 @@ export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
 
 export interface FetchOptions {
   isFormData?: boolean
+  trailingSlash?: boolean;
   headers?: HeadersInit
   responseType?: string
   contentType?: ContentTypes
@@ -37,6 +38,7 @@ export interface FetchRequestOptions {
 
 export const DefaultFetchOptions: FetchOptions = {
   headers: {},
+  trailingSlash: true,
   responseType: 'json',
   contentType: ContentTypes.JSON,
   accessType: 'json',
@@ -176,7 +178,7 @@ export class FetchResource implements BaseResource {
     if (this.baseUrl == null) {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
-    const urlPart = `/${url}/`;
+    const urlPart = `/${url}${this.defaultOptions.trailingSlash ? '/' : ''}`;
     let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, "$1");
     if (this.defaultOptions.timeOffset) {
       const timeOffset = (new Date()).getTimezoneOffset() * -1;
