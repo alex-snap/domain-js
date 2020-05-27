@@ -137,7 +137,7 @@ export class FetchResource implements BaseResource {
         return JSON.stringify(body);
       }
     }
-    return body;
+    return JSON.stringify(body);
   }
 
   private transformToFormData(body: any, form?: FormData, namespace?: string) {

@@ -48,7 +48,7 @@ describe('FetchResource options', () => {
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({
           method: 'post',
-          body: { data: 1 }
+          body: JSON.stringify({ data: 1 }),
         }));
       expect(response).toBeDefined()
       expect(response).toEqual(successResponseData);
@@ -83,7 +83,7 @@ describe('Post request', () => {
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({
           method: 'post',
-          body: { data: 1 }
+          body: JSON.stringify({ data: 1 })
         }));
       expect(response).toBeDefined()
       expect(response).toEqual(successResponseData);
@@ -115,7 +115,7 @@ describe('Put request', () => {
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({
           method: 'put',
-          body: { data: 1 }
+          body: JSON.stringify({ data: 1 })
         }));
       expect(response).toBeDefined()
       expect(response).toEqual(successResponseData);
@@ -147,7 +147,7 @@ describe('Patch request', () => {
       expect(global.fetch)
         .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({
           method: 'patch',
-          body: { data: 1 }
+          body: JSON.stringify({ data: 1 }),
         }));
       expect(response).toBeDefined()
       expect(response).toEqual(successResponseData);
