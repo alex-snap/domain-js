@@ -198,7 +198,7 @@ describe('Get request', () => {
   it('should pass query params in request', async () => {
     const queryString = `${baseUrl}test_url/?timeoffset=${timeOffset}&page=1&per_page=10&array=1,2,3`;
     const expectedUrl = expect.stringContaining(queryString);
-    await fetchResource.get('test_url', { params: { page: 1, per_page: 10, array: [1, 2, 3] } });
+    await fetchResource.get('test_url', { page: 1, per_page: 10, array: [1, 2, 3] });
     expect(global.fetch)
       .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ method: 'get' }));
   })
@@ -206,7 +206,7 @@ describe('Get request', () => {
     const queryTestfetchResource = new TestingFetchResource(baseUrl, { queryParamsDecodeMode: 'array' });
     const queryString = `${baseUrl}test_url/?timeoffset=${timeOffset}&page=1&per_page=10&array[]=1&array[]=2&array[]=3`;
     const expectedUrl = expect.stringContaining(queryString);
-    await queryTestfetchResource.get('test_url', { params: { page: 1, per_page: 10, array: [1, 2, 3] } });
+    await queryTestfetchResource.get('test_url', { page: 1, per_page: 10, array: [1, 2, 3] });
     expect(global.fetch)
       .toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ method: 'get' }));
   })

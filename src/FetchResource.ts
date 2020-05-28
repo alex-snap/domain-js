@@ -18,7 +18,7 @@ export interface FetchOptions {
   timeOffset?: boolean
   handleError?: () => any
   queryParamsDecodeMode?: 'comma' | 'array'
-  params?: any
+  // params?: any
   // todo 
   // Добавить проверку перед тем как отправить запрос
   // можно ли его слать (пример, если нет интернета или любое другое условие)
@@ -76,10 +76,10 @@ export class FetchResource implements BaseResource {
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
-  public get(url: string, options?: FetchOptions): Promise<object> {
-    const query = (options && options.params) ? this.getQueryString(options.params, options) : '';
+  public get(url: string, queryParams?: any, options?: FetchOptions): Promise<object> {
+    const query = queryParams != null ? this.getQueryString(queryParams, options) : '';
     const { requestUrl, requestOptions } = this.resolveRequestData('get', url, options);
-    const targetRequestUrl = `${requestUrl}&${query}`;
+    const targetRequestUrl = (query != null && query != '') ? `${requestUrl}&${query}` : requestUrl;
     return this.fetchHandleCode(targetRequestUrl, requestOptions);
   }
 
