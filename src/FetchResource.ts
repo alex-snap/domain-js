@@ -17,7 +17,7 @@ export interface FetchOptions {
   redirect?: RequestRedirect
   referrer?: 'no-referrer' | 'client'
   timeOffset?: boolean
-  handleError?: (payload: any) => any
+  handleError?: (payload: { response: Response, parsedBody: any }) => any
   queryParamsDecodeMode?: 'comma' | 'array'
   // params?: any
   // todo 
@@ -115,7 +115,7 @@ export class FetchResource implements BaseResource {
   private fetchHandleCode(url: string, options: FetchRequestOptions): Promise<any> {
     return new Promise((resolve, reject) => {
       this.fetchClient(url, options)
-        .then((response: Response) => {
+        .then(async (response: Response) => {
           if (response && response.status <= 208) {
             response.json().then((data: any) => {
               const result = { ...data };
@@ -123,12 +123,14 @@ export class FetchResource implements BaseResource {
               resolve(result);
             });
           } else {
+            const responseCopy = response.clone();
+            await this.handleError(responseCopy);
             reject(response);
           }
         })
-        .catch((error: Response) => {
+        .catch(async (error: Response) => {
           const errorCopy = error.clone();
-          this.handleError(errorCopy);
+          await this.handleError(errorCopy);
           reject(error);
         });
     });
