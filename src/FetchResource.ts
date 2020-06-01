@@ -1,5 +1,6 @@
 import { BaseResource } from "./interfaces/BaseResource";
 import { ContentTypes } from "./enums/ContentTypes";
+import { isFunction } from './helpers';
 
 export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
 
@@ -16,7 +17,7 @@ export interface FetchOptions {
   redirect?: RequestRedirect
   referrer?: 'no-referrer' | 'client'
   timeOffset?: boolean
-  handleError?: () => any
+  handleError?: (payload: any) => any
   queryParamsDecodeMode?: 'comma' | 'array'
   // params?: any
   // todo 
@@ -125,8 +126,25 @@ export class FetchResource implements BaseResource {
             reject(response);
           }
         })
-        .catch((error: any) => reject(error));
+        .catch((error: Response) => {
+          const errorCopy = error.clone();
+          this.handleError(errorCopy);
+          reject(error);
+        });
     });
+  }
+
+  private async handleError(e: Response) {
+    const response = e.clone();
+    let parsedBody = null;
+    if (isFunction(e.json)) {
+      parsedBody = await e.json();
+    } else if (isFunction(e.text)) {
+      parsedBody = await e.text();
+    } else if (isFunction(e.formData)) {
+      parsedBody = await e.formData();
+    }
+    this.defaultOptions.handleError({ response, parsedBody });
   }
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {
