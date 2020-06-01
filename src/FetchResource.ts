@@ -123,14 +123,19 @@ export class FetchResource implements BaseResource {
               resolve(result);
             });
           } else {
-            const responseCopy = response.clone();
-            await this.handleError(responseCopy);
+            if (isFunction(response.clone)) {
+              const responseCopy = response.clone();
+              await this.handleError(responseCopy);
+            }
             reject(response);
           }
         })
         .catch(async (error: Response) => {
-          const errorCopy = error.clone();
-          await this.handleError(errorCopy);
+          console.log(error);
+          if (isFunction(error?.clone)) {
+            const errorCopy = error?.clone();
+            await this.handleError(errorCopy);
+          }
           reject(error);
         });
     });
