@@ -160,6 +160,8 @@ export class FetchResource implements BaseResource {
         return this.transformToFormData(body);
       } else if (options.contentType === ContentTypes.JSON) {
         return JSON.stringify(body);
+      } else if (!!options.contentType) {
+        return body;
       }
     }
     return JSON.stringify(body);
