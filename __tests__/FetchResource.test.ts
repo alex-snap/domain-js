@@ -7,6 +7,20 @@ const timeOffset = (new Date()).getTimezoneOffset() * -1;
 const baseUrl = 'https://www.google.com/';
 const successResponseData = { data: 'success', _status: 200 };
 
+const successResponse = {
+  status: 200,
+  clone: () => successResponse,
+  text: () => Promise.resolve(JSON.stringify(successResponseData)),
+  json: () => Promise.resolve(successResponseData),
+};
+
+const failedResponse = {
+  status: 404,
+  clone: () => failedResponse,
+  text: () => Promise.resolve(JSON.stringify(successResponseData)),
+  json: () => Promise.resolve(null),
+}
+
 class TestingFetchResource extends FetchResource {
   public _getBaseUrl() {
     return this.baseUrl;
@@ -17,17 +31,9 @@ class TestingFetchResource extends FetchResource {
 }
 
 beforeEach(() => {
-  const mockSuccessFetchPromise = Promise.resolve({
-    status: 200,
-    text: () => Promise.resolve(JSON.stringify(successResponseData)),
-    json: () => Promise.resolve(successResponseData),
-  })
+  const mockSuccessFetchPromise = Promise.resolve(successResponse);
 
-  const mockFailedFetchPromise = Promise.resolve({
-    status: 404,
-    text: () => Promise.resolve(JSON.stringify(successResponseData)),
-    json: () => Promise.resolve(null),
-  });
+  const mockFailedFetchPromise = Promise.resolve(failedResponse);
 
   global.fetch = jest.fn()
     .mockImplementationOnce(() => mockSuccessFetchPromise)

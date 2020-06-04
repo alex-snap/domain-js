@@ -116,9 +116,9 @@ export class FetchResource implements BaseResource {
     return new Promise((resolve, reject) => {
       this.fetchClient(url, options)
         .then(async (response: Response) => {
-          const text = await response.text();
-          if (response && !!text && response.status <= 208) {
-            const data = await response.json();
+          const text = await response.clone().text();
+          if (response && response.status <= 208) {
+            const data = !!text ? await response.json() : undefined;
             const result = { ...data };
             result['_status'] = response.status;
             resolve(result);
@@ -143,14 +143,16 @@ export class FetchResource implements BaseResource {
   private async handleError(e: Response) {
     const response = e.clone();
     let parsedBody = null;
-    if (isFunction(e.json)) {
-      parsedBody = await e.json();
-    } else if (isFunction(e.text)) {
-      parsedBody = await e.text();
-    } else if (isFunction(e.formData)) {
-      parsedBody = await e.formData();
+    if (isFunction(e.text) && !!(await e.clone().text())) {
+      if (isFunction(e.json)) {
+        parsedBody = await e.json();
+      } else if (isFunction(e.text)) {
+        parsedBody = await e.text();
+      } else if (isFunction(e.formData)) {
+        parsedBody = await e.formData();
+      }
     }
-    this.defaultOptions.handleError({ response, parsedBody });
+    this.defaultOptions?.handleError && this.defaultOptions.handleError({ response, parsedBody });
   }
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {
