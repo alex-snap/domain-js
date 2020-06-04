@@ -19,12 +19,14 @@ class TestingFetchResource extends FetchResource {
 beforeEach(() => {
   const mockSuccessFetchPromise = Promise.resolve({
     status: 200,
-    json: () => Promise.resolve(successResponseData)
+    text: () => Promise.resolve(JSON.stringify(successResponseData)),
+    json: () => Promise.resolve(successResponseData),
   })
 
   const mockFailedFetchPromise = Promise.resolve({
     status: 404,
-    json: () => Promise.resolve(null)
+    text: () => Promise.resolve(JSON.stringify(successResponseData)),
+    json: () => Promise.resolve(null),
   });
 
   global.fetch = jest.fn()
