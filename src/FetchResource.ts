@@ -116,12 +116,12 @@ export class FetchResource implements BaseResource {
     return new Promise((resolve, reject) => {
       this.fetchClient(url, options)
         .then(async (response: Response) => {
-          if (response && response.status <= 208) {
-            response.json().then((data: any) => {
-              const result = { ...data };
-              result['_status'] = response.status;
-              resolve(result);
-            });
+          const text = await response.text();
+          if (response && !!text && response.status <= 208) {
+            const data = await response.json();
+            const result = { ...data };
+            result['_status'] = response.status;
+            resolve(result);
           } else {
             if (isFunction(response.clone)) {
               const responseCopy = response.clone();
@@ -131,7 +131,6 @@ export class FetchResource implements BaseResource {
           }
         })
         .catch(async (error: Response) => {
-          console.log(error);
           if (isFunction(error?.clone)) {
             const errorCopy = error?.clone();
             await this.handleError(errorCopy);
