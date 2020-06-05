@@ -2,6 +2,10 @@ const path = require('path');
 
 module.exports = {
     mode: 'production',
+    optimization: {
+		// We no not want to minimize our code (For DEBUG now)
+		minimize: false
+	},
     entry: './src/index.ts',
     module: {
         rules: [{
