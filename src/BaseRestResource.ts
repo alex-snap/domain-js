@@ -25,8 +25,8 @@ export class BaseRestResource {
     return this.resource.get(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public delete(options?: any): Promise<any> {
-    return this.resource.delete(this.resourceUrl, this.createOptions(options));
+  public delete(body?: any, options?: any): Promise<any> {
+    return this.resource.delete(this.resourceUrl, body, this.createOptions(options));
   }
 
   public child(...routeParts: Array<number | string>): BaseRestResource {

@@ -8,7 +8,7 @@ export interface BaseResource {
 
   get(path: string, body: any, options?: any): Promise<object>
 
-  delete(path: string, options?: any): Promise<void>
+  delete(path: string, body?: any, options?: any): Promise<void>
 
   setHeaders(headers: object): void
 

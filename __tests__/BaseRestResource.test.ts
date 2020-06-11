@@ -123,9 +123,10 @@ describe('Delete method', () => {
   it('should called with expected params', async () => {
     try {
       const expectedUrl = expect.stringMatching(resourceRelativePath);
-      const response = await testRestResource.delete();
+      const expectedBody = expect.objectContaining({ data: 1 });
+      const response = await testRestResource.delete({ data: 1 });
       expect(fakeFetchResource.delete)
-        .toHaveBeenCalledWith(expectedUrl, expect.any(Object));
+        .toHaveBeenCalledWith(expectedUrl, expectedBody, expect.any(Object));
       expect(response).toBeUndefined();
     } catch (error) {
       expect(error).toBeNull();

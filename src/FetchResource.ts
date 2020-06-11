@@ -84,8 +84,8 @@ export class FetchResource implements BaseResource {
     return this.fetchHandleCode(targetRequestUrl, requestOptions);
   }
 
-  public delete(url: string, options?: FetchOptions): Promise<void> {
-    const { requestUrl, requestOptions } = this.resolveRequestData('delete', url, options);
+  public delete(url: string, body?: any, options?: FetchOptions): Promise<void> {
+    const { requestUrl, requestOptions } = this.resolveRequestData('delete', url, options, body);
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
