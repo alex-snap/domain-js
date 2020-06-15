@@ -19,6 +19,7 @@ export interface FetchOptions {
   timeOffset?: boolean
   handleError?: (payload: { response: Response, parsedBody: any }) => any
   queryParamsDecodeMode?: 'comma' | 'array'
+  queryParams?: any
   // params?: any
   // todo 
   // Добавить проверку перед тем как отправить запрос
@@ -78,10 +79,8 @@ export class FetchResource implements BaseResource {
   }
 
   public get(url: string, queryParams?: any, options?: FetchOptions): Promise<object> {
-    const query = queryParams != null ? this.getQueryString(queryParams, options) : '';
-    const { requestUrl, requestOptions } = this.resolveRequestData('get', url, options);
-    const targetRequestUrl = (query != null && query != '') ? `${requestUrl}&${query}` : requestUrl;
-    return this.fetchHandleCode(targetRequestUrl, requestOptions);
+    const { requestUrl, requestOptions } = this.resolveRequestData('get', url, options, queryParams);
+    return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
   public delete(url: string, body?: any, options?: FetchOptions): Promise<void> {
@@ -195,10 +194,15 @@ export class FetchResource implements BaseResource {
   }
 
   private resolveRequestData(method: FetchRequestMethod, url: string, options?: FetchOptions, body?: any) {
-    const requestUrl = this.resolveRequestUrl(url);
+    const queryParams = method === 'get' ? body : (options && options.queryParams);
+    const requestBody = method === 'get' ? void 0 : body;
+    let requestUrl = this.resolveRequestUrl(url);
     const mergedOptions = this.resolveRequestOptions(options);
-    const decodedBody = this.resolveRequestBody(body, options);
+    const decodedBody = this.resolveRequestBody(requestBody, options);
     const requestOptions = this.createRequestOptions(method, mergedOptions, decodedBody);
+    const query = this.getQueryString(queryParams, options);
+    requestUrl = (query != null && query != '') ? `${requestUrl}?${query}` : requestUrl;
+
     return { requestUrl, requestOptions };
   }
 
@@ -208,10 +212,6 @@ export class FetchResource implements BaseResource {
     }
     const urlPart = `/${url}${this.defaultOptions.trailingSlash ? '/' : ''}`;
     let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, "$1");
-    if (this.defaultOptions.timeOffset) {
-      const timeOffset = (new Date()).getTimezoneOffset() * -1;
-      result += `?timeoffset=${timeOffset}`;
-    }
     return result;
   }
 
@@ -229,7 +229,7 @@ export class FetchResource implements BaseResource {
       redirect: options.redirect,
       referrer: options.referrer
     };
-
+    
     if (body) {
       result['body'] = body;
     }
@@ -251,8 +251,13 @@ export class FetchResource implements BaseResource {
     return { ...options.headers, ...additionalHeaders };
   }
 
-  private getQueryString(params: any, o: FetchOptions): string {
-    const options = { ...this.defaultOptions, ...o };
+  private getQueryString(params: any = {}, o: FetchOptions): string {
+    const options = { ...this.defaultOptions, ...o } as any;
+
+    if (options.timeOffset) {
+      params['timeoffset'] = (new Date()).getTimezoneOffset() * -1;
+    }
+
     return Object
       .keys(params)
       .map(k => {
