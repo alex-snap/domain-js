@@ -144,7 +144,11 @@ export class FetchResource implements BaseResource {
     let parsedBody = null;
     if (isFunction(e.text) && !!(await e.clone().text())) {
       if (isFunction(e.json)) {
-        parsedBody = await e.json();
+        try {
+          parsedBody = await e.json();
+        } catch (e) {
+          parsedBody = e.message;
+        }
       } else if (isFunction(e.text)) {
         parsedBody = await e.text();
       } else if (isFunction(e.formData)) {
