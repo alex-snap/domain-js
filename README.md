@@ -1,6 +1,6 @@
 # Domain-js
 
-Domain-js is a library contains generic classes that helps develop communication logic with Domain-Driven Design principles.
+Domain-js is a library contains generic classes that helps make CRUD operations easy with Domain-Driven Design principles.
 
   - Typescript support
   - Rest API approach
@@ -22,8 +22,8 @@ Or yarn.
 $ yarn add @snap-alex/domain-js
 ```
 
-### Usage
-First, create a core resource. Example with cross-fetch library;
+### Usage FetchResource
+First, create a core resource based on url. Example with cross-fetch library;
 ```javascript
 import { FetchResource } from "@snap-alex/domain-js";
 import fetch from "cross-fetch";
@@ -32,7 +32,7 @@ const httpResource = new FetchResource('https://www.my-base-url.com', fetch);
 export default httpResource;
 ```
 
-Use instance for create endpoint rest resources.
+Use httpResource instance for create endpoint Rest resources with BaseRestResource class.
 ```javascript
 import { BaseRestResource } from "@snap-alex/domain-js";
 import httpResource './core/infrastructure/httpResource';
@@ -41,7 +41,7 @@ const userResource = new BaseRestResource(httpResource, 'users');
 export default userResource;
 ```
 
-Already you can use resource for requests
+Already you can use your rest resource for requests
 ```javascript
 import { BaseRestResource } from "@snap-alex/domain-js";
 import userResource './users/userResource';
