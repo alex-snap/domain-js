@@ -3,11 +3,15 @@ import { BaseDataMapper } from "./data-mapper/index";
 
 import { isObject } from "./helpers";
 
-interface RepositorySettings {
+export interface RepositorySettings {
   pageKey: string
   perPageKey: string
   sortKey: string
   searchKey: string
+}
+
+export interface ArrayMeta<Entity extends object = {}, Meta extends any = {}> extends Array<Entity> {
+  meta?: Meta
 }
 
 const DefaultRepositorySettings = {
@@ -17,7 +21,7 @@ const DefaultRepositorySettings = {
   searchKey: 'search'
 };
 
-export class BaseRepository {
+export class BaseRepository<Entity extends {} = {}, EntityMeta extends {} = {}> {
   protected requestEntityWrap = (decodedData: any) => decodedData;
   protected entityIdName: string = 'id';
   protected settings: RepositorySettings = DefaultRepositorySettings;
@@ -28,38 +32,38 @@ export class BaseRepository {
     private dataMapper?: BaseDataMapper<any, any>) {
   }
 
-  public save(entity: object): Promise<any> {
-    return this[this.isEntityNew(entity) ? 'create' : 'update'](entity);
+  public save(entity: Entity): Promise<Entity> {
+    return this[this.isEntityNew(entity) ? 'create' : 'update'](entity) as Promise<Entity>;
   }
 
-  public create(entity: object): Promise<any> {
+  public create(entity: Entity): Promise<Entity> {
     const entityData = this.prepareEntityForRequest(entity);
     const query = this.createQuery(entityData);
     return this.resource().create(query)
-      .then((res) => this.processResponse(res));
+      .then((res) => this.processResponse(res)) as Promise<Entity>;
   }
 
-  public update(entity: object): Promise<any> {
+  public update(entity: Entity): Promise<Entity> {
     if (this.isEntityNew(entity)) {
       throw (new Error('BaseRepository#update(): you can not update a new entity'))
     }
     const entityData = this.prepareEntityForRequest(entity);
     const query = this.createQuery(entityData);
     return this.resource(entity).update(query)
-      .then((res) => this.processResponse(res));
+      .then((res) => this.processResponse(res)) as Promise<Entity>;
   }
 
-  public patch(entity: object): Promise<any> {
+  public patch(entity: Entity): Promise<Entity> {
     if (this.isEntityNew(entity)) {
       throw (new Error('BaseRepository#update(): you can not patch a new entity'));
     }
     const entityData = this.prepareEntityForRequest(entity);
     const query = this.createQuery(entityData);
     return this.resource(entity).patch(query)
-      .then((res) => this.processResponse(res));
+      .then((res) => this.processResponse(res)) as Promise<Entity>;
   }
 
-  public load(params?: object): Promise<any> {
+  public load(params?: object): Promise<ArrayMeta<Entity, EntityMeta>> {
     let query;
     if (this.defaultQueryParams != null) {
       query = Object.assign({}, { params: this.defaultQueryParams }, params);
@@ -67,10 +71,10 @@ export class BaseRepository {
       query = params;
     }
     return this.resource().get(query)
-      .then((res) => this.processResponse(res));
+      .then((res) => this.processResponse(res)) as Promise<ArrayMeta<Entity, EntityMeta>>;
   }
 
-  public loadById(id: string | number, params?: object): Promise<any> {
+  public loadById(id: string | number, params?: object): Promise<Entity> {
     if (id == null) {
       throw (new Error('BaseRepository#loadById(): id should not be null or undefined'));
     }
@@ -81,10 +85,10 @@ export class BaseRepository {
       query = params;
     }
     return this.resource(id).get(query)
-      .then((res) => this.processResponse(res));
+      .then((res) => this.processResponse(res)) as Promise<Entity>;
   }
 
-  public massDelete(entities: object[]): Promise<any> {
+  public massDelete(entities: Entity[]): Promise<any> {
     const promisesBatch = [] as Array<Promise<any>>;
     entities.forEach((entity) => {
       const promise = this.delete(entity);
@@ -93,23 +97,23 @@ export class BaseRepository {
     return Promise.all(promisesBatch);
   }
 
-  public delete(entity: object): Promise<any> {
+  public delete(entity: Entity): Promise<void> {
     if (this.isEntityNew(entity)) {
       throw (new Error('BaseRepository#delete(): you can not update a new entity'));
     }
     return this.resource(entity).delete()
-      .then((res) => this.processResponse(res));
+      .then((res) => this.processResponse(res)) as Promise<void>;
   }
 
-  public search(params?: any): Promise<any> {
+  public search(params?: any): Promise<ArrayMeta<Entity, EntityMeta>> {
     const searchParams = this.resolveSearchParams(params);
     const requestBody = Object.assign({}, searchParams, this.defaultQueryParams);
     return this.resource().get(requestBody)
-      .then((res) => this.processResponse(res));
+      .then((res) => this.processResponse(res)) as Promise<ArrayMeta<Entity, EntityMeta>>;
   }
 
-  public isEntityNew(entity: any): boolean {
-    return entity && entity[this.entityIdName] == null;
+  public isEntityNew(entity: Entity): boolean {
+    return entity && (entity as any)[this.entityIdName] == null;
   }
 
   public setDefaultQueryParams(params: any) {
@@ -130,7 +134,7 @@ export class BaseRepository {
     return this.restResource.child(...params);
   }
 
-  protected prepareEntityForRequest(entity: object): object {
+  protected prepareEntityForRequest(entity: Entity): Entity {
     let result = entity;
     if (this.dataMapper) {
       result = this.dataMapper.decode(entity);
@@ -141,7 +145,7 @@ export class BaseRepository {
     return result;
   }
 
-  protected async processResponse(response: any): Promise<any> {
+  protected async processResponse(response: any): Promise<Entity | ArrayMeta<Entity, EntityMeta>> {
     let result = { meta: null } as any;
     
     let responseJson;
@@ -223,7 +227,7 @@ export class BaseRepository {
     return {};
   }
 
-  private encodeEntity(entityData: any): object {
+  private encodeEntity(entityData: any): Entity {
     if (this.dataMapper) {
       return this.dataMapper.encode(entityData);
     }

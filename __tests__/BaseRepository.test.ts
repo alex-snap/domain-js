@@ -54,7 +54,7 @@ class FakeFormData {
 
 (global as any).FormData = FakeFormData;
 
-beforeEach(() => {
+beforeEach(async () => {
   fakeChildRestResource = new FakeRestResource();
   fakeRestResource = new FakeRestResource(fakeChildRestResource);
   testRepository = new BaseRepository(fakeRestResource);
