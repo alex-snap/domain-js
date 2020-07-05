@@ -124,7 +124,8 @@ export class FetchResource implements BaseResource {
           } else {
             if (isFunction(response.clone)) {
               const responseCopy = response.clone();
-              await this.handleError(responseCopy);
+              const handledErrorResult = await this.handleError(responseCopy);
+              reject(handledErrorResult);
             }
             reject(response);
           }
@@ -132,7 +133,9 @@ export class FetchResource implements BaseResource {
         .catch(async (error: Response) => {
           if (isFunction(error?.clone)) {
             const errorCopy = error?.clone();
+            const handledErrorResult = await this.handleError(errorCopy);
             await this.handleError(errorCopy);
+            reject(handledErrorResult);
           }
           reject(error);
         });
@@ -156,6 +159,7 @@ export class FetchResource implements BaseResource {
       }
     }
     this.defaultOptions?.handleError && this.defaultOptions.handleError({ response, parsedBody });
+    return { response, parsedBody };
   }
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {

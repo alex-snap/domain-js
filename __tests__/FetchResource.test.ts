@@ -103,11 +103,10 @@ describe('Post request', () => {
     try {
       await fetchResource.post('test_url', { data: '1' });
       await fetchResource.post('test_url', { data: '1' });
-    } catch (error) {
-      const message = await error.json();
-      expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
-      expect(message).toBeNull();
+    } catch ({ response, parsedBody }) {
+      expect(response).toBeDefined();
+      expect(response.status).toEqual(404);
+      expect(parsedBody).toBeNull();
     }
   });
 });
@@ -135,11 +134,10 @@ describe('Put request', () => {
     try {
       await fetchResource.put('test_url', { data: '1' });
       await fetchResource.put('test_url', { data: '1' });
-    } catch (error) {
-      const message = await error.json();
-      expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
-      expect(message).toBeNull();
+    } catch ({ response, parsedBody }) {
+      expect(response).toBeDefined();
+      expect(response.status).toEqual(404);
+      expect(parsedBody).toBeNull();
     }
   });
 });
@@ -167,11 +165,10 @@ describe('Patch request', () => {
     try {
       await fetchResource.patch('test_url', { data: '1' });
       await fetchResource.patch('test_url', { data: '1' });
-    } catch (error) {
-      const message = await error.json();
-      expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
-      expect(message).toBeNull();
+    } catch ({ response, parsedBody }) {
+      expect(response).toBeDefined();
+      expect(response.status).toEqual(404);
+      expect(parsedBody).toBeNull();
     }
   });
 });
@@ -196,11 +193,10 @@ describe('Get request', () => {
     try {
       await fetchResource.get('test_url');
       await fetchResource.get('test_url');
-    } catch (error) {
-      const message = await error.json();
-      expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
-      expect(message).toBeNull();
+    } catch ({ response, parsedBody }) {
+      expect(response).toBeDefined();
+      expect(response.status).toEqual(404);
+      expect(parsedBody).toBeNull();
     }
   });
   it('should pass query params in request', async () => {
@@ -240,11 +236,10 @@ describe('Delete request', () => {
     try {
       await fetchResource.delete('test_url');
       await fetchResource.delete('test_url');
-    } catch (error) {
-      const message = await error.json();
-      expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
-      expect(message).toBeNull();
+    } catch ({ response, parsedBody }) {
+      expect(response).toBeDefined();
+      expect(response.status).toEqual(404);
+      expect(parsedBody).toBeNull();
     }
   });
 });
