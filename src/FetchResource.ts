@@ -131,19 +131,14 @@ export class FetchResource implements BaseResource {
           }
         })
         .catch(async (error: Response) => {
-          if (isFunction(error?.clone)) {
-            const errorCopy = error?.clone();
-            const handledErrorResult = await this.handleError(errorCopy);
-            await this.handleError(errorCopy);
-            reject(handledErrorResult);
-          }
-          reject(error);
+          const handledErrorResult = await this.handleError(error);
+          reject(handledErrorResult);
         });
     });
   }
 
   private async handleError(e: Response) {
-    const response = e.clone();
+    const response = isFunction(e?.clone) ? e.clone() : e;
     let parsedBody = null;
     if (isFunction(e.text) && !!(await e.clone().text())) {
       if (isFunction(e.json)) {
