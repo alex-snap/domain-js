@@ -110,4 +110,8 @@ export class StorageResource implements BaseResource {
     return `${this.storageKey}/entities_ids`;
   }
 
+  public getQueryString(): string {
+    return 'not supported';
+  }
+
 }
