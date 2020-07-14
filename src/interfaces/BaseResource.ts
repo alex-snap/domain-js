@@ -20,4 +20,6 @@ export interface BaseResource {
 
   getAllEntities(): Promise<any>
 
+  getQueryString(): string
+
 }
