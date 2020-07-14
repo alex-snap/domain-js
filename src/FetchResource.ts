@@ -254,8 +254,8 @@ export class FetchResource implements BaseResource {
     return { ...options.headers, ...additionalHeaders };
   }
 
-  private getQueryString(params: any = {}, o: FetchOptions): string {
-    const options = { ...this.defaultOptions, ...o } as any;
+  public getQueryString(params: any = {}, o?: FetchOptions): string {
+    const options = o != null ? { ...this.defaultOptions, ...o } : this.defaultOptions as FetchOptions;
 
     if (options.timeOffset) {
       params['timeoffset'] = (new Date()).getTimezoneOffset() * -1;

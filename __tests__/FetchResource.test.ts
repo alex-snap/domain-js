@@ -305,3 +305,21 @@ describe('Resolve destination', () => {
     expect(path).toEqual('users/part1/part2/part3');
   });
 });
+
+describe('Get query string', () => {
+  it('method should be defined', () => {
+    expect(fetchResource.getQueryString).toBeInstanceOf(Function);
+  });
+
+  it('should create query string from object', () => {
+    const result1 = fetchResource.getQueryString({ coupons: ['SL-6TXY0-QB524OT'] });
+    const result2 = fetchResource.getQueryString({ coupons: ['SL-6TXY0-QB524OT'] }, { queryParamsDecodeMode: 'array' })
+    const result3 = fetchResource.getQueryString({ coupons: ['SL-6TXY0-QB524OT'] }, { 
+      queryParamsDecodeMode: 'array',
+      timeOffset: false,
+    })
+    expect(result1).toEqual('coupons=SL-6TXY0-QB524OT&timeoffset=180');
+    expect(result2).toEqual('coupons[]=SL-6TXY0-QB524OT&timeoffset=180');
+    expect(result3).toEqual('coupons[]=SL-6TXY0-QB524OT');
+  });
+});
