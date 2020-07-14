@@ -318,8 +318,10 @@ describe('Get query string', () => {
       queryParamsDecodeMode: 'array',
       timeOffset: false,
     })
+    const result4 = fetchResource.getQueryString({ coupons: [] }, { queryParamsDecodeMode: 'array' });
     expect(result1).toEqual('coupons=SL-6TXY0-QB524OT&timeoffset=180');
     expect(result2).toEqual('coupons[]=SL-6TXY0-QB524OT&timeoffset=180');
     expect(result3).toEqual('coupons[]=SL-6TXY0-QB524OT');
+    expect(result4).toEqual('timeoffset=180');
   });
 });
