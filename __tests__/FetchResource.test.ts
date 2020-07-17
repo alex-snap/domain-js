@@ -103,10 +103,10 @@ describe('Post request', () => {
     try {
       await fetchResource.post('test_url', { data: '1' });
       await fetchResource.post('test_url', { data: '1' });
-    } catch ({ response, parsedBody }) {
-      expect(response).toBeDefined();
-      expect(response.status).toEqual(404);
-      expect(parsedBody).toBeNull();
+    } catch (error) {
+      expect(error).toBeDefined();
+      expect(error.status).toEqual(404);
+      expect(error.parsedBody).toBeNull();
     }
   });
 });
@@ -134,10 +134,10 @@ describe('Put request', () => {
     try {
       await fetchResource.put('test_url', { data: '1' });
       await fetchResource.put('test_url', { data: '1' });
-    } catch ({ response, parsedBody }) {
-      expect(response).toBeDefined();
-      expect(response.status).toEqual(404);
-      expect(parsedBody).toBeNull();
+    } catch (error) {
+      expect(error).toBeDefined();
+      expect(error.status).toEqual(404);
+      expect(error.parsedBody).toBeNull();
     }
   });
 });
@@ -165,10 +165,10 @@ describe('Patch request', () => {
     try {
       await fetchResource.patch('test_url', { data: '1' });
       await fetchResource.patch('test_url', { data: '1' });
-    } catch ({ response, parsedBody }) {
-      expect(response).toBeDefined();
-      expect(response.status).toEqual(404);
-      expect(parsedBody).toBeNull();
+    } catch (error) {
+      expect(error).toBeDefined();
+      expect(error.status).toEqual(404);
+      expect(error.parsedBody).toBeNull();
     }
   });
 });
@@ -193,10 +193,10 @@ describe('Get request', () => {
     try {
       await fetchResource.get('test_url');
       await fetchResource.get('test_url');
-    } catch ({ response, parsedBody }) {
-      expect(response).toBeDefined();
-      expect(response.status).toEqual(404);
-      expect(parsedBody).toBeNull();
+    } catch (error) {
+      expect(error).toBeDefined();
+      expect(error.status).toEqual(404);
+      expect(error.parsedBody).toBeNull();
     }
   });
   it('should pass query params in request', async () => {
@@ -236,10 +236,10 @@ describe('Delete request', () => {
     try {
       await fetchResource.delete('test_url');
       await fetchResource.delete('test_url');
-    } catch ({ response, parsedBody }) {
-      expect(response).toBeDefined();
-      expect(response.status).toEqual(404);
-      expect(parsedBody).toBeNull();
+    } catch (error) {
+      expect(error).toBeDefined();
+      expect(error.status).toEqual(404);
+      expect(error.parsedBody).toBeNull();
     }
   });
 });
@@ -314,7 +314,7 @@ describe('Get query string', () => {
   it('should create query string from object', () => {
     const result1 = fetchResource.getQueryString({ coupons: ['SL-6TXY0-QB524OT'] });
     const result2 = fetchResource.getQueryString({ coupons: ['SL-6TXY0-QB524OT'] }, { queryParamsDecodeMode: 'array' })
-    const result3 = fetchResource.getQueryString({ coupons: ['SL-6TXY0-QB524OT'] }, { 
+    const result3 = fetchResource.getQueryString({ coupons: ['SL-6TXY0-QB524OT'] }, {
       queryParamsDecodeMode: 'array',
       timeOffset: false,
     })

@@ -24,6 +24,7 @@ beforeEach(() => {
     clearHeaders: () => { },
     setBasePath: () => { },
     resolveDestination: () => resourceChildPath,
+    getQueryString: () => '',
     getAllEntities: createResourceMockResponse([])
   };
 

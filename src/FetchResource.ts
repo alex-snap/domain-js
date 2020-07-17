@@ -58,8 +58,8 @@ export class FetchResource implements BaseResource {
   protected defaultOptions: FetchOptions;
 
   constructor(protected baseUrl: string,
-              defaultOptions?: FetchOptions,
-              protected fetchClient = fetch) {
+    defaultOptions?: FetchOptions,
+    protected fetchClient = fetch) {
     this.defaultOptions = { ...DefaultFetchOptions, ...defaultOptions };
   }
 
@@ -154,7 +154,7 @@ export class FetchResource implements BaseResource {
       }
     }
     this.defaultOptions?.handleError && this.defaultOptions.handleError({ response, parsedBody });
-    return { response, parsedBody };
+    return { ...response, parsedBody };
   }
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {
@@ -232,7 +232,7 @@ export class FetchResource implements BaseResource {
       redirect: options.redirect,
       referrer: options.referrer
     };
-    
+
     if (body) {
       result['body'] = body;
     }
