@@ -154,7 +154,8 @@ export class FetchResource implements BaseResource {
       }
     }
     this.defaultOptions?.handleError && this.defaultOptions.handleError({ response, parsedBody });
-    return { ...response, parsedBody };
+    (response as Response & { parsedBody: any }).parsedBody = parsedBody;
+    return response;
   }
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {
