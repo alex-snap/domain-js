@@ -160,11 +160,15 @@ export class FetchResource implements BaseResource {
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {
     if (options) {
-      if (options.contentType === ContentTypes.FORM_DATA) {
-        return this.transformToFormData(body);
-      } else if (options.contentType === ContentTypes.JSON) {
-        return JSON.stringify(body);
-      } else if (!!options.contentType) {
+      if (body != null) {
+        if (options.contentType === ContentTypes.FORM_DATA) {
+          return this.transformToFormData(body);
+        } else if (options.contentType === ContentTypes.JSON) {
+          return JSON.stringify(body);
+        } else if (!!options.contentType) {
+          return body;
+        }
+      } else {
         return body;
       }
     }
@@ -206,7 +210,6 @@ export class FetchResource implements BaseResource {
     const requestOptions = this.createRequestOptions(method, mergedOptions, decodedBody);
     const query = this.getQueryString(queryParams, options);
     requestUrl = (query != null && query != '') ? `${requestUrl}?${query}` : requestUrl;
-
     return { requestUrl, requestOptions };
   }
 
@@ -216,10 +219,6 @@ export class FetchResource implements BaseResource {
     }
     const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
     let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, "$1");
-
-    // console.log('resolveRequestUrl url', url);
-    // console.log('resolveRequestUrl urlPart', urlPart);
-    // console.log('resolveRequestUrl result', result);
     return result;
   }
 
