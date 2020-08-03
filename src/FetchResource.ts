@@ -200,8 +200,8 @@ export class FetchResource implements BaseResource {
   private resolveRequestData(method: FetchRequestMethod, url: string, options?: FetchOptions, body?: any) {
     const queryParams = method === 'get' ? body : (options && options.queryParams);
     const requestBody = method === 'get' ? void 0 : body;
-    let requestUrl = this.resolveRequestUrl(url);
     const mergedOptions = this.resolveRequestOptions(options);
+    let requestUrl = this.resolveRequestUrl(url, mergedOptions);
     const decodedBody = this.resolveRequestBody(requestBody, options);
     const requestOptions = this.createRequestOptions(method, mergedOptions, decodedBody);
     const query = this.getQueryString(queryParams, options);
@@ -210,12 +210,16 @@ export class FetchResource implements BaseResource {
     return { requestUrl, requestOptions };
   }
 
-  private resolveRequestUrl(url: string): string {
+  private resolveRequestUrl(url: string, o?: FetchOptions): string {
     if (this.baseUrl == null) {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
-    const urlPart = `/${url}${this.defaultOptions.trailingSlash ? '/' : ''}`;
+    const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
     let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, "$1");
+
+    // console.log('resolveRequestUrl url', url);
+    // console.log('resolveRequestUrl urlPart', urlPart);
+    // console.log('resolveRequestUrl result', result);
     return result;
   }
 
