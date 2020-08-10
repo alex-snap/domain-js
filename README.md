@@ -43,7 +43,7 @@ export interface Book {
 }
 ```
 
-### Create entity rest resoyrce
+### Create entity rest resource
 Use BaseRestResource class for create Entity resource endpoint. Based on previosly created httpResource instance.
 ```typescript
 import { BaseRestResource } from "@snap-alex/domain-js";
