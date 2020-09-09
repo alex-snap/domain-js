@@ -20,6 +20,7 @@ export interface FetchOptions {
   handleError?: (payload: { response: Response; parsedBody: any }) => any;
   queryParamsDecodeMode?: 'comma' | 'array';
   queryParams?: any;
+  canSendRequest?: () => Promise<{ can: boolean; error: Error }>;
   // params?: any
   // todo
   // Добавить проверку перед тем как отправить запрос
@@ -134,7 +135,13 @@ export class FetchResource implements BaseResource {
   }
 
   private fetchHandleCode(url: string, options: FetchRequestOptions): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      if (this.defaultOptions.canSendRequest !== undefined) {
+        const { error, can } = await this.defaultOptions.canSendRequest();
+        if (!can) {
+          throw error;
+        }
+      }
       this.fetchClient(url, options)
         .then(async (response: Response) => {
           if (response && response.status <= 208) {
