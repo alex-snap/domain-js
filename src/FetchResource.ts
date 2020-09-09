@@ -1,41 +1,41 @@
-import { BaseResource } from "./interfaces/BaseResource";
-import { ContentTypes } from "./enums/ContentTypes";
+import { BaseResource } from './interfaces/BaseResource';
+import { ContentTypes } from './enums/ContentTypes';
 import { isFunction } from './helpers';
 
 export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
 
 export interface FetchOptions {
-  isFormData?: boolean
+  isFormData?: boolean;
   trailingSlash?: boolean;
-  headers?: HeadersInit
-  responseType?: string
-  contentType?: ContentTypes
-  accessType?: string
-  mode?: RequestMode
-  cache?: RequestCache
-  credentials?: RequestCredentials
-  redirect?: RequestRedirect
-  referrer?: 'no-referrer' | 'client'
-  timeOffset?: boolean
-  handleError?: (payload: { response: Response, parsedBody: any }) => any
-  queryParamsDecodeMode?: 'comma' | 'array'
-  queryParams?: any
+  headers?: HeadersInit;
+  responseType?: string;
+  contentType?: ContentTypes;
+  accessType?: string;
+  mode?: RequestMode;
+  cache?: RequestCache;
+  credentials?: RequestCredentials;
+  redirect?: RequestRedirect;
+  referrer?: 'no-referrer' | 'client';
+  timeOffset?: boolean;
+  handleError?: (payload: { response: Response; parsedBody: any }) => any;
+  queryParamsDecodeMode?: 'comma' | 'array';
+  queryParams?: any;
   // params?: any
-  // todo 
+  // todo
   // Добавить проверку перед тем как отправить запрос
   // можно ли его слать (пример, если нет интернета или любое другое условие)
   // то есть перехватить и вернуть другую ошибку
 }
 
 export interface FetchRequestOptions {
-  method: FetchRequestMethod
-  headers?: HeadersInit
-  mode?: RequestMode
-  cache?: RequestCache
-  credentials?: RequestCredentials
-  redirect?: RequestRedirect
-  referrer?: string
-  body?: any
+  method: FetchRequestMethod;
+  headers?: HeadersInit;
+  mode?: RequestMode;
+  cache?: RequestCache;
+  credentials?: RequestCredentials;
+  redirect?: RequestRedirect;
+  referrer?: string;
+  body?: any;
 }
 
 export const DefaultFetchOptions: FetchOptions = {
@@ -51,15 +51,17 @@ export const DefaultFetchOptions: FetchOptions = {
   referrer: 'client',
   timeOffset: true,
   handleError: undefined,
-  queryParamsDecodeMode: 'comma'
+  queryParamsDecodeMode: 'comma',
 };
 
 export class FetchResource implements BaseResource {
   protected defaultOptions: FetchOptions;
 
-  constructor(protected baseUrl: string,
+  constructor(
+    protected baseUrl: string,
     defaultOptions?: FetchOptions,
-    protected fetchClient = fetch) {
+    protected fetchClient = fetch
+  ) {
     this.defaultOptions = { ...DefaultFetchOptions, ...defaultOptions };
   }
 
@@ -79,7 +81,12 @@ export class FetchResource implements BaseResource {
   }
 
   public get(url: string, queryParams?: any, options?: FetchOptions): Promise<object> {
-    const { requestUrl, requestOptions } = this.resolveRequestData('get', url, options, queryParams);
+    const { requestUrl, requestOptions } = this.resolveRequestData(
+      'get',
+      url,
+      options,
+      queryParams
+    );
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
@@ -101,8 +108,10 @@ export class FetchResource implements BaseResource {
   }
 
   public resolveDestination(pathParts: Array<number | string>, basePath: string): string {
-    return (pathParts.reduce((resultUrl, routePart) =>
-      `${resultUrl}/${routePart}`, basePath) as string).replace(/([^:]\/)\/+/g, "$1");
+    return (pathParts.reduce(
+      (resultUrl, routePart) => `${resultUrl}/${routePart}`,
+      basePath
+    ) as string).replace(/([^:]\/)\/+/g, '$1');
   }
 
   public getAllEntities(): Promise<any> {
@@ -111,23 +120,34 @@ export class FetchResource implements BaseResource {
     });
   }
 
+  private extractResponseContent(response: Response) {
+    const responseContentType = response.headers.get('content-type');
+    if (responseContentType.indexOf('application/json') > -1) {
+      return response.json();
+    } else if (responseContentType.indexOf('application/octet-stream') > -1) {
+      return response.blob();
+    } else if (responseContentType.indexOf('multipart/form-data') > -1) {
+      return response.formData();
+    } else {
+      return response.text();
+    }
+  }
+
   private fetchHandleCode(url: string, options: FetchRequestOptions): Promise<any> {
     return new Promise((resolve, reject) => {
       this.fetchClient(url, options)
         .then(async (response: Response) => {
-          const text = await response.clone().text();
           if (response && response.status <= 208) {
-            const data = !!text ? await response.json() : undefined;
-            const result = { ...data };
-            result['_status'] = response.status;
-            resolve(result);
-          } else {
-            if (isFunction(response.clone)) {
-              const responseCopy = response.clone();
-              const handledErrorResult = await this.handleError(responseCopy);
-              reject(handledErrorResult);
+            const data = await this.extractResponseContent(response.clone());
+            if (typeof data === 'string') {
+              resolve(data);
+            } else {
+              data['_status'] = response.status;
+              resolve(data);
             }
-            reject(response);
+          } else {
+            const handledErrorResult = await this.handleError(response);
+            reject(handledErrorResult);
           }
         })
         .catch(async (error: Response) => {
@@ -137,25 +157,10 @@ export class FetchResource implements BaseResource {
     });
   }
 
-  private async handleError(e: Response) {
-    const response = isFunction(e?.clone) ? e.clone() : e;
-    let parsedBody = null;
-    if (isFunction(e.text) && !!(await e.clone().text())) {
-      if (isFunction(e.json)) {
-        try {
-          parsedBody = await e.json();
-        } catch (e) {
-          parsedBody = e.message;
-        }
-      } else if (isFunction(e.text)) {
-        parsedBody = await e.text();
-      } else if (isFunction(e.formData)) {
-        parsedBody = await e.formData();
-      }
-    }
+  private async handleError(response: Response) {
+    let parsedBody = await this.extractResponseContent(response.clone());
     this.defaultOptions?.handleError && this.defaultOptions.handleError({ response, parsedBody });
-    (response as Response & { parsedBody: any }).parsedBody = parsedBody;
-    return response;
+    return { ...response, parsedBody };
   }
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {
@@ -182,9 +187,11 @@ export class FetchResource implements BaseResource {
       if (!body.hasOwnProperty(property) || !value) {
         continue;
       }
-      const formKey = namespace ?
-        (Array.isArray(body) ? `${namespace}[]` : `${namespace}[${property}]`) :
-        property;
+      const formKey = namespace
+        ? Array.isArray(body)
+          ? `${namespace}[]`
+          : `${namespace}[${property}]`
+        : property;
       if (value instanceof Date) {
         formData.append(formKey, (value as Date).toISOString());
       } else if (this.isFile(value)) {
@@ -201,15 +208,20 @@ export class FetchResource implements BaseResource {
     return typeof value === 'object'; //&& !(value instanceof File)
   }
 
-  private resolveRequestData(method: FetchRequestMethod, url: string, options?: FetchOptions, body?: any) {
-    const queryParams = method === 'get' ? body : (options && options.queryParams);
+  private resolveRequestData(
+    method: FetchRequestMethod,
+    url: string,
+    options?: FetchOptions,
+    body?: any
+  ) {
+    const queryParams = method === 'get' ? body : options && options.queryParams;
     const requestBody = method === 'get' ? void 0 : body;
     const mergedOptions = this.resolveRequestOptions(options);
     let requestUrl = this.resolveRequestUrl(url, mergedOptions);
     const decodedBody = this.resolveRequestBody(requestBody, options);
     const requestOptions = this.createRequestOptions(method, mergedOptions, decodedBody);
     const query = this.getQueryString(queryParams, options);
-    requestUrl = (query != null && query != '') ? `${requestUrl}?${query}` : requestUrl;
+    requestUrl = query != null && query != '' ? `${requestUrl}?${query}` : requestUrl;
     return { requestUrl, requestOptions };
   }
 
@@ -218,7 +230,7 @@ export class FetchResource implements BaseResource {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
     const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
-    let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, "$1");
+    let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
     return result;
   }
 
@@ -226,7 +238,11 @@ export class FetchResource implements BaseResource {
     return { ...this.defaultOptions, ...options };
   }
 
-  private createRequestOptions(method: FetchRequestMethod, options: FetchOptions, body?: any): FetchRequestOptions {
+  private createRequestOptions(
+    method: FetchRequestMethod,
+    options: FetchOptions,
+    body?: any
+  ): FetchRequestOptions {
     const result: FetchRequestOptions = {
       method,
       headers: this.resolveHeaders(options),
@@ -234,7 +250,7 @@ export class FetchResource implements BaseResource {
       cache: options.cache,
       credentials: options.credentials,
       redirect: options.redirect,
-      referrer: options.referrer
+      referrer: options.referrer,
     };
 
     if (body) {
@@ -259,15 +275,15 @@ export class FetchResource implements BaseResource {
   }
 
   public getQueryString(params: any = {}, o?: FetchOptions): string {
-    const options = o != null ? { ...this.defaultOptions, ...o } : this.defaultOptions as FetchOptions;
+    const options =
+      o != null ? { ...this.defaultOptions, ...o } : (this.defaultOptions as FetchOptions);
 
     if (options.timeOffset) {
-      params['timeoffset'] = (new Date()).getTimezoneOffset() * -1;
+      params['timeoffset'] = new Date().getTimezoneOffset() * -1;
     }
 
-    return Object
-      .keys(params)
-      .map(k => {
+    return Object.keys(params)
+      .map((k) => {
         if (params[k] === null || params[k] === undefined) {
           return '';
         } else if (Array.isArray(params[k])) {
@@ -281,11 +297,10 @@ export class FetchResource implements BaseResource {
               return `${encodeURIComponent(k)}=${params[k].join(',')}`;
           }
         } else {
-          return `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`
+          return `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`;
         }
       })
       .filter(Boolean)
       .join('&');
   }
-
 }
