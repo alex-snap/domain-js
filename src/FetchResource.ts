@@ -120,23 +120,34 @@ export class FetchResource implements BaseResource {
     });
   }
 
+  private extractResponseContent(response: Response) {
+    const responseContentType = response.headers.get('content-type');
+    if (responseContentType.indexOf('application/json') > -1) {
+      return response.json();
+    } else if (responseContentType.indexOf('application/octet-stream') > -1) {
+      return response.blob();
+    } else if (responseContentType.indexOf('multipart/form-data') > -1) {
+      return response.formData();
+    } else {
+      return response.text();
+    }
+  }
+
   private fetchHandleCode(url: string, options: FetchRequestOptions): Promise<any> {
     return new Promise((resolve, reject) => {
       this.fetchClient(url, options)
         .then(async (response: Response) => {
-          const text = await response.clone().text();
           if (response && response.status <= 208) {
-            const data = !!text ? await response.json() : undefined;
-            const result = { ...data };
-            result['_status'] = response.status;
-            resolve(result);
-          } else {
-            if (isFunction(response.clone)) {
-              const responseCopy = response.clone();
-              const handledErrorResult = await this.handleError(responseCopy);
-              reject(handledErrorResult);
+            const data = await this.extractResponseContent(response.clone());
+            if (typeof data === 'string') {
+              resolve(data);
+            } else {
+              data['_status'] = response.status;
+              resolve(data);
             }
-            reject(response);
+          } else {
+            const handledErrorResult = await this.handleError(response);
+            reject(handledErrorResult);
           }
         })
         .catch(async (error: Response) => {
@@ -146,25 +157,10 @@ export class FetchResource implements BaseResource {
     });
   }
 
-  private async handleError(e: Response) {
-    const response = isFunction(e?.clone) ? e.clone() : e;
-    let parsedBody = null;
-    if (isFunction(e.text) && !!(await e.clone().text())) {
-      if (isFunction(e.json)) {
-        try {
-          parsedBody = await e.json();
-        } catch (e) {
-          parsedBody = e.message;
-        }
-      } else if (isFunction(e.text)) {
-        parsedBody = await e.text();
-      } else if (isFunction(e.formData)) {
-        parsedBody = await e.formData();
-      }
-    }
+  private async handleError(response: Response) {
+    let parsedBody = await this.extractResponseContent(response.clone());
     this.defaultOptions?.handleError && this.defaultOptions.handleError({ response, parsedBody });
-    (response as Response & { parsedBody: any }).parsedBody = parsedBody;
-    return response;
+    return { ...response, parsedBody };
   }
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {
