@@ -221,7 +221,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions,
     body?: any
   ) {
-    const queryParams = method === 'get' ? body : options && options.queryParams;
+    let queryParams = method === 'get' ? body : options && options.queryParams;
     const requestBody = method === 'get' ? void 0 : body;
     const mergedOptions = this.resolveRequestOptions(options);
     let requestUrl = this.resolveRequestUrl(url, mergedOptions);
