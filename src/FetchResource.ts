@@ -1,6 +1,5 @@
 import { BaseResource } from './interfaces/BaseResource';
 import { ContentTypes } from './enums/ContentTypes';
-import { isFunction } from './helpers';
 
 export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
 
@@ -64,6 +63,7 @@ export class FetchResource implements BaseResource {
     protected fetchClient = fetch
   ) {
     this.defaultOptions = { ...DefaultFetchOptions, ...defaultOptions };
+    this.fetchClient = this.fetchClient.bind(this);
   }
 
   public post(url: string, body: any, options?: FetchOptions): Promise<object> {
@@ -144,30 +144,23 @@ export class FetchResource implements BaseResource {
       }
       this.fetchClient(url, options)
         .then(async (response: Response) => {
-          if (response && response.status <= 208) {
-            const data = await this.extractResponseContent(response.clone());
-            if (typeof data === 'string') {
-              resolve(data);
-            } else {
-              data['_status'] = response.status;
-              resolve(data);
-            }
+          const data = await this.extractResponseContent(response.clone());
+          if (typeof data !== 'string') {
+            data['_status'] = response.status;
+          }
+          if (response.ok) {
+            resolve(data);
           } else {
-            const handledErrorResult = await this.handleError(response);
-            reject(handledErrorResult);
+            if (this.defaultOptions?.handleError) {
+              this.defaultOptions.handleError({ response, parsedBody: data });
+            }
+            reject(data);
           }
         })
-        .catch(async (error: Response) => {
-          const handledErrorResult = await this.handleError(error);
-          reject(handledErrorResult);
+        .catch(async (error: TypeError) => {
+          return reject(error);
         });
     });
-  }
-
-  private async handleError(response: Response) {
-    let parsedBody = await this.extractResponseContent(response.clone());
-    this.defaultOptions?.handleError && this.defaultOptions.handleError({ response, parsedBody });
-    return { ...response, parsedBody };
   }
 
   private resolveRequestBody(body: any, options?: FetchOptions): any {

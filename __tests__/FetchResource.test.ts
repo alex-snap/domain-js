@@ -113,7 +113,7 @@ describe('Post request', () => {
       await fetchResource.post('test_url', { data: '1' });
     } catch (error) {
       expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
+      expect(error._status).toEqual(404);
     }
   });
 });
@@ -145,7 +145,7 @@ describe('Put request', () => {
       await fetchResource.put('test_url', { data: '1' });
     } catch (error) {
       expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
+      expect(error._status).toEqual(404);
     }
   });
 });
@@ -177,7 +177,7 @@ describe('Patch request', () => {
       await fetchResource.patch('test_url', { data: '1' });
     } catch (error) {
       expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
+      expect(error._status).toEqual(404);
     }
   });
 });
@@ -206,7 +206,7 @@ describe('Get request', () => {
       await fetchResource.get('test_url');
     } catch (error) {
       expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
+      expect(error._status).toEqual(404);
     }
   });
   it('should pass query params in request', async () => {
@@ -264,7 +264,7 @@ describe('Delete request', () => {
       await fetchResource.delete('test_url');
     } catch (error) {
       expect(error).toBeDefined();
-      expect(error.status).toEqual(404);
+      expect(error._status).toEqual(404);
     }
   });
 });
