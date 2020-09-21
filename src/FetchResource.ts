@@ -1,5 +1,7 @@
-import { BaseResource } from './interfaces/BaseResource';
+import { ResourceResponse, BaseResource } from './interfaces/BaseResource';
 import { ContentTypes } from './enums/ContentTypes';
+import 'whatwg-fetch';
+import { extractBlobContent, extractFormData } from './helpers';
 
 export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
 
@@ -66,37 +68,76 @@ export class FetchResource implements BaseResource {
     this.fetchClient = this.fetchClient.bind(this);
   }
 
-  public post(url: string, body: any, options?: FetchOptions): Promise<object> {
-    const { requestUrl, requestOptions } = this.resolveRequestData('post', url, options, body);
-    return this.fetchHandleCode(requestUrl, requestOptions);
-  }
-
-  public put(url: string, body: any, options?: FetchOptions): Promise<object> {
-    const { requestUrl, requestOptions } = this.resolveRequestData('put', url, options, body);
-    return this.fetchHandleCode(requestUrl, requestOptions);
-  }
-
-  public patch(url: string, body: any, options?: FetchOptions): Promise<object> {
-    const { requestUrl, requestOptions } = this.resolveRequestData('patch', url, options, body);
-    return this.fetchHandleCode(requestUrl, requestOptions);
-  }
-
-  public get(url: string, queryParams?: any, options?: FetchOptions): Promise<object> {
-    const { requestUrl, requestOptions } = this.resolveRequestData(
-      'get',
+  public post(
+    url: string,
+    body?: Record<string, any>,
+    options?: FetchOptions
+  ): Promise<ResourceResponse> {
+    const { requestUrl, requestOptions } = this.createRequest({
+      method: 'post',
       url,
       options,
-      queryParams
-    );
+      body,
+    });
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
-  public delete(url: string, body?: any, options?: FetchOptions): Promise<void> {
-    const { requestUrl, requestOptions } = this.resolveRequestData('delete', url, options, body);
+  public put(
+    url: string,
+    body?: Record<string, any>,
+    options?: FetchOptions
+  ): Promise<ResourceResponse> {
+    const { requestUrl, requestOptions } = this.createRequest({
+      method: 'put',
+      url,
+      options,
+      body,
+    });
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
-  public setHeaders(headers: object) {
+  public patch(
+    url: string,
+    body?: Record<string, any>,
+    options?: FetchOptions
+  ): Promise<ResourceResponse> {
+    const { requestUrl, requestOptions } = this.createRequest({
+      method: 'patch',
+      url,
+      options,
+      body,
+    });
+    return this.fetchHandleCode(requestUrl, requestOptions);
+  }
+
+  public get(
+    url: string,
+    queryParams?: Record<string, any>,
+    options?: FetchOptions
+  ): Promise<ResourceResponse> {
+    const { requestUrl, requestOptions } = this.createRequest({
+      method: 'get',
+      url,
+      options: { ...options, queryParams },
+    });
+    return this.fetchHandleCode(requestUrl, requestOptions);
+  }
+
+  public delete(
+    url: string,
+    body?: Record<string, any>,
+    options?: FetchOptions
+  ): Promise<ResourceResponse> {
+    const { requestUrl, requestOptions } = this.createRequest({
+      method: 'delete',
+      url,
+      options,
+      body,
+    });
+    return this.fetchHandleCode(requestUrl, requestOptions);
+  }
+
+  public setHeaders(headers: Record<string, string>) {
     this.defaultOptions.headers = Object.assign({}, this.defaultOptions.headers, headers);
   }
 
@@ -121,20 +162,22 @@ export class FetchResource implements BaseResource {
     });
   }
 
-  private extractResponseContent(response: Response) {
+  private async extractResponseContent(
+    response: Response
+  ): Promise<{ [key: string]: any } | string> {
     const responseContentType = response.headers.get('content-type');
     if (responseContentType.indexOf('application/json') > -1) {
-      return response.json();
+      return response.json<Record<string | number | symbol, any>>();
     } else if (responseContentType.indexOf('application/octet-stream') > -1) {
-      return response.blob();
+      return extractBlobContent(await response.blob());
     } else if (responseContentType.indexOf('multipart/form-data') > -1) {
-      return response.formData();
+      return extractFormData(await response.formData());
     } else {
       return response.text();
     }
   }
 
-  private fetchHandleCode(url: string, options: FetchRequestOptions): Promise<any> {
+  private fetchHandleCode(url: string, options: RequestInit): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.defaultOptions.canSendRequest !== undefined) {
         const { error, can } = await this.defaultOptions.canSendRequest();
@@ -145,8 +188,8 @@ export class FetchResource implements BaseResource {
       this.fetchClient(url, options)
         .then(async (response: Response) => {
           const data = await this.extractResponseContent(response.clone());
-          if (typeof data !== 'string') {
-            data['_status'] = response.status;
+          if (typeof data === 'object') {
+            Object.assign(data, { ['_status']: response.status });
           }
           if (response.ok) {
             resolve(data);
@@ -163,7 +206,10 @@ export class FetchResource implements BaseResource {
     });
   }
 
-  private resolveRequestBody(body: any, options?: FetchOptions): any {
+  private resolveRequestBody(
+    body: Record<string, any> | null,
+    options?: FetchOptions
+  ): Record<string, any> | string | FormData | null {
     if (options) {
       if (body != null) {
         if (options.contentType === ContentTypes.FORM_DATA) {
@@ -180,7 +226,11 @@ export class FetchResource implements BaseResource {
     return JSON.stringify(body);
   }
 
-  private transformToFormData(body: any, form?: FormData, namespace?: string) {
+  private transformToFormData(
+    body: Record<string, any>,
+    form?: FormData,
+    namespace?: string
+  ): FormData {
     const formData = form || new FormData();
     for (const property in body) {
       const value = body[property];
@@ -208,20 +258,19 @@ export class FetchResource implements BaseResource {
     return typeof value === 'object'; //&& !(value instanceof File)
   }
 
-  private resolveRequestData(
-    method: FetchRequestMethod,
-    url: string,
-    options?: FetchOptions,
-    body?: any
-  ) {
-    let queryParams = method === 'get' ? body : options && options.queryParams;
-    const requestBody = method === 'get' ? void 0 : body;
+  private createRequest(data: {
+    method: FetchRequestMethod;
+    url: string;
+    options?: FetchOptions;
+    body?: any;
+  }): { requestUrl: string; requestOptions: RequestInit } {
+    const { method, url, options, body } = data;
     const mergedOptions = this.resolveRequestOptions(options);
     let requestUrl = this.resolveRequestUrl(url, mergedOptions);
-    const decodedBody = this.resolveRequestBody(requestBody, options);
+    const decodedBody = this.resolveRequestBody(body, options);
     const requestOptions = this.createRequestOptions(method, mergedOptions, decodedBody);
-    const query = this.getQueryString(queryParams, options);
-    requestUrl = query != null && query != '' ? `${requestUrl}?${query}` : requestUrl;
+    const query = this.getQueryString(options?.queryParams, options);
+    requestUrl = [requestUrl, query].filter(Boolean).join('?');
     return { requestUrl, requestOptions };
   }
 
@@ -234,7 +283,7 @@ export class FetchResource implements BaseResource {
     return result;
   }
 
-  private resolveRequestOptions(options: any) {
+  private resolveRequestOptions(options: FetchOptions) {
     return { ...this.defaultOptions, ...options };
   }
 
@@ -242,9 +291,10 @@ export class FetchResource implements BaseResource {
     method: FetchRequestMethod,
     options: FetchOptions,
     body?: any
-  ): FetchRequestOptions {
-    const result: FetchRequestOptions = {
+  ): RequestInit {
+    return {
       method,
+      body: body ?? undefined,
       headers: this.resolveHeaders(options),
       mode: options.mode,
       cache: options.cache,
@@ -252,16 +302,10 @@ export class FetchResource implements BaseResource {
       redirect: options.redirect,
       referrer: options.referrer,
     };
-
-    if (body) {
-      result['body'] = body;
-    }
-
-    return result;
   }
 
   private resolveHeaders(options: FetchOptions) {
-    const additionalHeaders = {} as any;
+    const additionalHeaders: Record<string, string> = {};
     if (options.contentType === ContentTypes.JSON) {
       additionalHeaders['Content-Type'] = 'application/json';
     } else if (options.contentType === ContentTypes.FORM_DATA) {
@@ -274,30 +318,31 @@ export class FetchResource implements BaseResource {
     return { ...options.headers, ...additionalHeaders };
   }
 
-  public getQueryString(params: any = {}, o?: FetchOptions): string {
-    const options =
-      o != null ? { ...this.defaultOptions, ...o } : (this.defaultOptions as FetchOptions);
+  public getQueryString(
+    params: Record<string, string | number | boolean | (string | number | boolean)[]> = {},
+    options?: FetchOptions
+  ): string {
+    const { timeOffset, queryParamsDecodeMode } = { ...this.defaultOptions, ...options };
 
-    if (options.timeOffset) {
+    if (timeOffset) {
       params['timeoffset'] = new Date().getTimezoneOffset() * -1;
     }
 
     return Object.keys(params)
       .map((k) => {
-        if (params[k] === null || params[k] === undefined) {
-          return '';
-        } else if (Array.isArray(params[k])) {
-          switch (options.queryParamsDecodeMode) {
+        const value = params[k];
+        if (Array.isArray(value)) {
+          switch (queryParamsDecodeMode) {
             case 'array':
-              return params[k]
-                .map((val: any) => `${encodeURIComponent(k)}[]=${encodeURIComponent(val)}`)
+              return value
+                .map((val) => `${encodeURIComponent(k)}[]=${encodeURIComponent(val)}`)
                 .join('&');
             case 'comma':
             default:
-              return `${encodeURIComponent(k)}=${params[k].join(',')}`;
+              return `${encodeURIComponent(k)}=${value.join(',')}`;
           }
-        } else {
-          return `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`;
+        } else if (value !== null && value !== undefined) {
+          return `${encodeURIComponent(k)}=${encodeURIComponent(value)}`;
         }
       })
       .filter(Boolean)

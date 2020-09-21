@@ -7,6 +7,7 @@ let fetchResource: TestingFetchResource;
 const timeOffset = new Date().getTimezoneOffset() * -1;
 const baseUrl = 'https://www.google.com/';
 const successResponseData = { data: 'success', _status: 200 };
+const failedResponseData = { data: 'failed', _status: 404 };
 
 const successResponse = new Response(JSON.stringify(successResponseData), {
   status: 200,
@@ -15,7 +16,7 @@ const successResponse = new Response(JSON.stringify(successResponseData), {
   },
 });
 
-const failedResponse = new Response(JSON.stringify(successResponseData), {
+const failedResponse = new Response(JSON.stringify(failedResponseData), {
   status: 404,
   headers: {
     'content-type': 'application/json',

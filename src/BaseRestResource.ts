@@ -1,31 +1,34 @@
-import { BaseResource } from './interfaces/BaseResource';
+import { BaseResource, ResourceResponse } from './interfaces/BaseResource';
+
+type Body = Record<string, any>;
+type Options = Record<string, any>;
 
 export class BaseRestResource {
-
   protected Constructor = BaseRestResource;
 
-  constructor(private resource: BaseResource,
-              private resourceUrl: string,
-              private options?: any) {
-  }
+  constructor(
+    private resource: BaseResource,
+    private resourceUrl: string,
+    private options?: Options
+  ) {}
 
-  public create(body: any, options?: any): Promise<any> {
+  public create(body: Body, options?: Options): Promise<ResourceResponse> {
     return this.resource.post(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public update(body: any, options?: any): Promise<any> {
+  public update(body: Body, options?: Options): Promise<ResourceResponse> {
     return this.resource.put(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public patch(body: any, options?: any): Promise<any> {
+  public patch(body: Body, options?: Options): Promise<ResourceResponse> {
     return this.resource.patch(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public get(body?: any, options?: any): Promise<any> {
+  public get(body?: Body, options?: Options): Promise<ResourceResponse> {
     return this.resource.get(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public delete(body?: any, options?: any): Promise<any> {
+  public delete(body?: Body, options?: Options): Promise<ResourceResponse> {
     return this.resource.delete(this.resourceUrl, body, this.createOptions(options));
   }
 
@@ -38,7 +41,7 @@ export class BaseRestResource {
     return this.resource;
   }
 
-  private createOptions(options: any): any {
+  private createOptions(options: Options): Options {
     return Object.assign({}, this.options, options);
   }
 }

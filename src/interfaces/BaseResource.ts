@@ -1,25 +1,30 @@
+export type ResourceResponse =
+  | {
+      [key: string]: any;
+      _status: number;
+    }
+  | string;
+
 export interface BaseResource {
+  post(path: string, body: any, options?: any): Promise<ResourceResponse>;
 
-  post(path: string, body: any, options?: any): Promise<object>
+  put(path: string, body: any, options?: any): Promise<ResourceResponse>;
 
-  put(path: string, body: any, options?: any): Promise<object>
+  patch(path: string, body: any, options?: any): Promise<ResourceResponse>;
 
-  patch(path: string, body: any, options?: any): Promise<object>
+  get(path: string, body: any, options?: any): Promise<ResourceResponse>;
 
-  get(path: string, body: any, options?: any): Promise<object>
+  delete(path: string, body?: any, options?: any): Promise<ResourceResponse>;
 
-  delete(path: string, body?: any, options?: any): Promise<void>
+  setHeaders(headers: object): void;
 
-  setHeaders(headers: object): void
+  clearHeaders(): void;
 
-  clearHeaders(): void
+  setBasePath(basePath: string): void;
 
-  setBasePath(basePath: string): void
+  resolveDestination(pathParts: Array<number | string>, basePath: string): string;
 
-  resolveDestination(pathParts: Array<number | string>, basePath: string): string
+  getAllEntities(): Promise<any>;
 
-  getAllEntities(): Promise<any>
-
-  getQueryString(): string
-
+  getQueryString(): string;
 }
