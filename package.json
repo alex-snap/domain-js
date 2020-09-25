@@ -51,5 +51,8 @@
   "keywords": [],
   "files": [
     "dist/**/*"
-  ]
+  ],
+  "dependencies": {
+    "axios": "^0.20.0"
+  }
 }

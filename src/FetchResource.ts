@@ -1,7 +1,7 @@
 import { ResourceResponse, BaseResource } from './interfaces/BaseResource';
 import { ContentTypes } from './enums/ContentTypes';
 import 'whatwg-fetch';
-import { extractBlobContent, extractFormData } from './helpers';
+import { decodeQueryString, extractBlobContent, extractFormData } from './helpers';
 
 export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
 
@@ -43,6 +43,7 @@ export interface FetchRequestOptions {
 export const DefaultFetchOptions: FetchOptions = {
   headers: {},
   trailingSlash: true,
+  timeOffset: true,
   responseType: 'json',
   contentType: ContentTypes.JSON,
   accessType: 'json',
@@ -51,7 +52,6 @@ export const DefaultFetchOptions: FetchOptions = {
   credentials: 'same-origin',
   redirect: 'follow',
   referrer: 'client',
-  timeOffset: true,
   handleError: undefined,
   queryParamsDecodeMode: 'comma',
 };
@@ -158,7 +158,7 @@ export class FetchResource implements BaseResource {
 
   public getAllEntities(): Promise<any> {
     return new Promise((_, reject) => {
-      reject(new Error('BaseHttpResource #getAllEntities(): need to provide method'));
+      reject(new Error('FetchResource #getAllEntities(): need to provide method'));
     });
   }
 
@@ -276,7 +276,7 @@ export class FetchResource implements BaseResource {
 
   private resolveRequestUrl(url: string, o?: FetchOptions): string {
     if (this.baseUrl == null) {
-      throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
+      throw new Error('FetchResource#resolveRequestUrl: baseUrl is not defined');
     }
     const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
     let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
@@ -328,24 +328,6 @@ export class FetchResource implements BaseResource {
       params['timeoffset'] = new Date().getTimezoneOffset() * -1;
     }
 
-    return Object.keys(params)
-      .map((k) => {
-        const value = params[k];
-        if (Array.isArray(value)) {
-          switch (queryParamsDecodeMode) {
-            case 'array':
-              return value
-                .map((val) => `${encodeURIComponent(k)}[]=${encodeURIComponent(val)}`)
-                .join('&');
-            case 'comma':
-            default:
-              return `${encodeURIComponent(k)}=${value.join(',')}`;
-          }
-        } else if (value !== null && value !== undefined) {
-          return `${encodeURIComponent(k)}=${encodeURIComponent(value)}`;
-        }
-      })
-      .filter(Boolean)
-      .join('&');
+    return decodeQueryString(params, queryParamsDecodeMode);
   }
 }

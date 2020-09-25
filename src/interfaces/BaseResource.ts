@@ -6,17 +6,17 @@ export type ResourceResponse =
   | string;
 
 export interface BaseResource {
-  post(path: string, body: any, options?: any): Promise<ResourceResponse>;
+  post(path: string, body: Record<string, any>, options?: any): Promise<ResourceResponse>;
 
-  put(path: string, body: any, options?: any): Promise<ResourceResponse>;
+  put(path: string, body: Record<string, any>, options?: any): Promise<ResourceResponse>;
 
-  patch(path: string, body: any, options?: any): Promise<ResourceResponse>;
+  patch(path: string, body: Record<string, any>, options?: any): Promise<ResourceResponse>;
 
-  get(path: string, body: any, options?: any): Promise<ResourceResponse>;
+  get(path: string, body: Record<string, any>, options?: any): Promise<ResourceResponse>;
 
-  delete(path: string, body?: any, options?: any): Promise<ResourceResponse>;
+  delete(path: string, body?: Record<string, any>, options?: any): Promise<ResourceResponse>;
 
-  setHeaders(headers: object): void;
+  setHeaders(headers: Record<string, any>): void;
 
   clearHeaders(): void;
 

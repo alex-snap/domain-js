@@ -74,10 +74,10 @@ export function isObject<T>(
 export function isFunction<T>(
   value: T | ((...args: any[]) => any)
 ): value is T extends (...args: any[]) => any
-  ? unknown extends T
-    ? never
-    : (...args: any[]) => any
-  : (...args: any[]) => any {
+? unknown extends T
+? never
+: (...args: any[]) => any
+: (...args: any[]) => any {
   return typeof value === 'function';
 }
 
@@ -99,4 +99,28 @@ export function extractFormData(formData: FormData) {
     (acc, [key, value]) => Object.assign(acc, { [key]: value }),
     {}
   );
+}
+
+export function decodeQueryString(
+  params: Record<string, string | number | boolean | (string | number | boolean)[]> = {},
+  mode: 'array' | 'comma') {
+  return Object.keys(params)
+    .map((k) => {
+      const value = params[k];
+      if (Array.isArray(value)) {
+        switch (mode) {
+          case 'array':
+            return value
+              .map((val) => `${encodeURIComponent(k)}[]=${encodeURIComponent(val)}`)
+              .join('&');
+          case 'comma':
+          default:
+            return `${encodeURIComponent(k)}=${value.join(',')}`;
+        }
+      } else if (value !== null && value !== undefined) {
+        return `${encodeURIComponent(k)}=${encodeURIComponent(value)}`;
+      }
+    })
+    .filter(Boolean)
+    .join('&');
 }
