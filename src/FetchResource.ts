@@ -165,7 +165,7 @@ export class FetchResource implements BaseResource {
   private async extractResponseContent(
     response: Response
   ): Promise<{ [key: string]: any } | string> {
-    const responseContentType = response.headers.get('content-type');
+    const responseContentType = response.headers.get('content-type') || '';
     if (responseContentType.indexOf('application/json') > -1) {
       return response.json<Record<string | number | symbol, any>>();
     } else if (responseContentType.indexOf('application/octet-stream') > -1) {
