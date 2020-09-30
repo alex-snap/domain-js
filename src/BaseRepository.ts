@@ -176,15 +176,12 @@ export class BaseRepository<
     }
 
     let { _status, ...entity } = response;
-    let result: EntityMeta | ArrayMeta<Entity, Meta> = {
-      meta: { responseStatus: _status, ...entity.meta },
-    };
-
-    const content =
+    const meta = { meta: { responseStatus: _status, ...entity.meta } };
+    let result: EntityMeta | ArrayMeta<Entity, Meta> =
       entity.data && Array.isArray(entity.data)
-        ? entity.data.map(this.encodeEntity, this)
-        : this.encodeEntity(entity);
-    Object.assign(result, content);
+        ? Object.assign(entity.data.map(this.encodeEntity, this), meta)
+        : Object.assign(this.encodeEntity(entity), meta);
+
     return result;
   }
 
