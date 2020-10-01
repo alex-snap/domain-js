@@ -1,366 +1,341 @@
 import { FetchResource, DefaultFetchOptions } from '../src/FetchResource';
 import 'whatwg-fetch';
 
-// global;
-declare var global: any;
-let fetchResource: TestingFetchResource;
 const timeOffset = new Date().getTimezoneOffset() * -1;
 const baseUrl = 'https://www.google.com/';
-const successResponseData = { data: 'success', _status: 200 };
-const failedResponseData = { data: 'failed', _status: 404 };
 
-const successResponse = new Response(JSON.stringify(successResponseData), {
+const successResponse = new Response(JSON.stringify({ data: 'success' }), {
   status: 200,
   headers: {
     'content-type': 'application/json',
   },
 });
 
-const failedResponse = new Response(JSON.stringify(failedResponseData), {
+const failedResponse = new Response(JSON.stringify({ data: 'failed' }), {
   status: 404,
   headers: {
     'content-type': 'application/json',
   },
 });
 
-class TestingFetchResource extends FetchResource {
-  public _getBaseUrl() {
-    return this.baseUrl;
-  }
-  public _getDefaultOptions() {
-    return this.defaultOptions;
-  }
-}
+describe('FetchResource', () => {
+  let fetchResource: FetchResource;
+  let fetchMock: jest.Mock;
+  beforeEach(() => {
+    fetchMock = jest.fn().mockResolvedValueOnce(successResponse).mockResolvedValue(failedResponse);
 
-beforeEach(() => {
-  const mockSuccessFetchPromise = Promise.resolve(successResponse.clone());
+    fetchResource = new FetchResource(baseUrl, undefined, fetchMock);
+  });
 
-  const mockFailedFetchPromise = Promise.resolve(failedResponse.clone());
-
-  global.fetch = jest
-    .fn()
-    .mockImplementationOnce(() => mockSuccessFetchPromise)
-    .mockImplementationOnce(() => mockFailedFetchPromise);
-
-  fetchResource = new TestingFetchResource(baseUrl);
-});
-
-afterEach(() => {
-  global.fetch.mockClear();
-  delete global.fetch;
-});
-
-describe('FetchResource options', () => {
-  it('trailing slash', async () => {
-    try {
-      const testFetchResource = new TestingFetchResource(baseUrl, {
-        trailingSlash: false,
-      });
+  describe('FetchResource options', () => {
+    it('trailing slash', async () => {
       const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
-      const response = await testFetchResource.post('test_url', { data: 1 });
-      expect(global.fetch).toHaveBeenCalledWith(
+      const response = await fetchResource.post('test_url', { data: 1 }, { trailingSlash: false });
+      expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
           method: 'post',
           body: JSON.stringify({ data: 1 }),
         })
       );
-      expect(response).toBeDefined();
-      expect(response).toEqual(successResponseData);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
-  });
-});
-
-describe('FetchResource instance', () => {
-  it('fetchResource instance of FetchResource', async () => {
-    expect(fetchResource).toBeInstanceOf(FetchResource);
+      expect(response).toEqual(expect.objectContaining({ data: expect.anything() }));
+    });
   });
 
-  it('should store base url', () => {
-    expect(fetchResource._getBaseUrl()).toBe(baseUrl);
+  describe('FetchResource instance', () => {
+    it('fetchResource instance of FetchResource', async () => {
+      expect(fetchResource).toBeInstanceOf(FetchResource);
+    });
+
+    it('should store base url', () => {
+      expect((fetchResource as any).baseUrl).toBe(baseUrl);
+    });
+
+    it('should contain default options', () => {
+      expect((fetchResource as any).defaultOptions).toEqual(DefaultFetchOptions);
+    });
   });
 
-  it('should contain default options', () => {
-    expect(fetchResource._getDefaultOptions()).toEqual(DefaultFetchOptions);
-  });
-});
-
-describe('Post request', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.post).toBeInstanceOf(Function);
-  });
-  it('should receive success response', async () => {
-    try {
+  describe('Post request', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.post).toBeInstanceOf(Function);
+    });
+    it('should receive success response', async () => {
       const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.post('test_url', { data: 1 });
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
           method: 'post',
           body: JSON.stringify({ data: 1 }),
         })
       );
-      expect(response).toBeDefined();
-      expect(response).toEqual(successResponseData);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
-  });
-  it('should catch error response', async () => {
-    try {
+      expect(response).toEqual(
+        expect.objectContaining({ _status: expect.any(Number), data: expect.anything() })
+      );
+    });
+    it('should catch error response', async () => {
       await fetchResource.post('test_url', { data: '1' });
-      await fetchResource.post('test_url', { data: '1' });
-    } catch (error) {
-      expect(error).toBeDefined();
-      expect(error._status).toEqual(404);
-    }
+      expect(fetchResource.post('test_url', { data: '1' })).rejects.toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
+    });
   });
-});
 
-describe('Put request', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.put).toBeInstanceOf(Function);
-  });
-  it('should receive success response', async () => {
-    try {
+  describe('Put request', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.put).toBeInstanceOf(Function);
+    });
+    it('should receive success response', async () => {
       const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.put('test_url', { data: 1 });
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
           method: 'put',
           body: JSON.stringify({ data: 1 }),
         })
       );
-      expect(response).toBeDefined();
-      expect(response).toEqual(successResponseData);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
-  });
-  it('should catch error response', async () => {
-    try {
+      expect(response).toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
+    });
+    it('should catch error response', async () => {
       await fetchResource.put('test_url', { data: '1' });
-      await fetchResource.put('test_url', { data: '1' });
-    } catch (error) {
-      expect(error).toBeDefined();
-      expect(error._status).toEqual(404);
-    }
+      expect(fetchResource.put('test_url', { data: '1' })).rejects.toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
+    });
   });
-});
 
-describe('Patch request', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.patch).toBeInstanceOf(Function);
-  });
-  it('should receive success response', async () => {
-    try {
+  describe('Patch request', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.patch).toBeInstanceOf(Function);
+    });
+    it('should receive success response', async () => {
       const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.patch('test_url', { data: 1 });
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
           method: 'patch',
           body: JSON.stringify({ data: 1 }),
         })
       );
-      expect(response).toBeDefined();
-      expect(response).toEqual(successResponseData);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
-  });
-  it('should catch error response', async () => {
-    try {
+      expect(response).toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
+    });
+    it('should catch error response', async () => {
       await fetchResource.patch('test_url', { data: '1' });
-      await fetchResource.patch('test_url', { data: '1' });
-    } catch (error) {
-      expect(error).toBeDefined();
-      expect(error._status).toEqual(404);
-    }
+      expect(fetchResource.patch('test_url', { data: '1' })).rejects.toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
+    });
   });
-});
 
-describe('Get request', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.get).toBeInstanceOf(Function);
-  });
-  it('should receive success response', async () => {
-    try {
+  describe('Get request', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.get).toBeInstanceOf(Function);
+    });
+    it('should receive success response', async () => {
       const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.get('test_url');
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({ method: 'get' })
       );
-      expect(response).toBeDefined();
-      expect(response).toEqual(successResponseData);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
-  });
-  it('should catch error response', async () => {
-    try {
+      expect(response).toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
+    });
+    it('should catch error response', async () => {
       await fetchResource.get('test_url');
-      await fetchResource.get('test_url');
-    } catch (error) {
-      expect(error).toBeDefined();
-      expect(error._status).toEqual(404);
-    }
-  });
-  it('should pass query params in request', async () => {
-    const queryString = `${baseUrl}test_url/?page=1&per_page=10&array=1,2,3&timeoffset=${timeOffset}`;
-    const expectedUrl = expect.stringContaining(queryString);
-    await fetchResource.get('test_url', {
-      page: 1,
-      per_page: 10,
-      array: [1, 2, 3],
+      expect(fetchResource.get('test_url')).rejects.toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
     });
-    expect(global.fetch).toHaveBeenCalledWith(
-      expectedUrl,
-      expect.objectContaining({ method: 'get' })
-    );
-  });
-  it('should pass query params array as array in request', async () => {
-    const queryTestfetchResource = new TestingFetchResource(baseUrl, {
-      queryParamsDecodeMode: 'array',
+    it('should pass query params in request', async () => {
+      const queryString = `${baseUrl}test_url/?page=1&per_page=10&array=1,2,3&timeoffset=${timeOffset}`;
+      const expectedUrl = expect.stringContaining(queryString);
+      await fetchResource.get('test_url', {
+        page: 1,
+        per_page: 10,
+        array: [1, 2, 3],
+      });
+      expect(fetchMock).toHaveBeenCalledWith(
+        expectedUrl,
+        expect.objectContaining({ method: 'get' })
+      );
     });
-    const queryString = `${baseUrl}test_url/?page=1&per_page=10&array[]=1&array[]=2&array[]=3&timeoffset=${timeOffset}`;
-    const expectedUrl = expect.stringContaining(queryString);
-    await queryTestfetchResource.get('test_url', {
-      page: 1,
-      per_page: 10,
-      array: [1, 2, 3],
+    it('should pass query params array as array in request', async () => {
+      const queryString = `${baseUrl}test_url/?page=1&per_page=10&array[]=1&array[]=2&array[]=3&timeoffset=${timeOffset}`;
+      const expectedUrl = expect.stringContaining(queryString);
+      await fetchResource.get(
+        'test_url',
+        {
+          page: 1,
+          per_page: 10,
+          array: [1, 2, 3],
+        },
+        { queryParamsDecodeMode: 'array' }
+      );
+      expect(fetchMock).toHaveBeenCalledWith(
+        expectedUrl,
+        expect.objectContaining({ method: 'get' })
+      );
     });
-    expect(global.fetch).toHaveBeenCalledWith(
-      expectedUrl,
-      expect.objectContaining({ method: 'get' })
-    );
   });
-});
 
-describe('Delete request', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.delete).toBeInstanceOf(Function);
-  });
-  it('should receive success response', async () => {
-    try {
+  describe('Delete request', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.delete).toBeInstanceOf(Function);
+    });
+    it('should receive success response', async () => {
       const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
       const response = await fetchResource.delete('test_url');
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({ method: 'delete' })
       );
-      expect(response).toBeDefined();
-      expect(response).toEqual(successResponseData);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
-  });
-  it('should catch error response', async () => {
-    try {
-      await fetchResource.delete('test_url');
-      await fetchResource.delete('test_url');
-    } catch (error) {
-      expect(error).toBeDefined();
-      expect(error._status).toEqual(404);
-    }
-  });
-});
-
-describe('Set headers', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.setHeaders).toBeInstanceOf(Function);
-  });
-
-  it('should store headers', () => {
-    const headers = { Authorization: 'X' };
-    fetchResource.setHeaders(headers);
-    const savedHeaders = fetchResource._getDefaultOptions().headers;
-    expect(savedHeaders).toEqual(headers);
-  });
-
-  it('should send headers on each request', async () => {
-    const headers = { Authorization: 'X' };
-    fetchResource.setHeaders(headers);
-    const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
-    await fetchResource.get('test_url');
-    expect(global.fetch).toHaveBeenCalledWith(
-      expectedUrl,
-      expect.objectContaining({ headers: expect.objectContaining(headers) })
-    );
-  });
-});
-
-describe('Clear headers', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.clearHeaders).toBeInstanceOf(Function);
-  });
-  it('should clear headers', () => {
-    const headers = { Authorization: 'X' };
-    fetchResource.setHeaders(headers);
-    fetchResource.clearHeaders();
-    const savedHeaders = fetchResource._getDefaultOptions().headers;
-    expect(savedHeaders).toBeUndefined();
-  });
-});
-
-describe('Set base path dynamically', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.setBasePath).toBeInstanceOf(Function);
-  });
-
-  it('should change base path', async () => {
-    const newBasePath = 'https://www.newBasePath.ru/';
-    const expectedUrl = expect.stringContaining(`${newBasePath}test_url`);
-    fetchResource.setBasePath(newBasePath);
-    await fetchResource.get('test_url');
-    expect(global.fetch).toHaveBeenCalledWith(expectedUrl, expect.any(Object));
-  });
-});
-
-describe('Resolve destination', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.resolveDestination).toBeInstanceOf(Function);
-  });
-
-  it('should create path from parts', () => {
-    const relativePath = 'users';
-    const additionalParts = ['part1', 'part2', 'part3'];
-    const path = fetchResource.resolveDestination(additionalParts, relativePath);
-    expect(path).toEqual('users/part1/part2/part3');
-  });
-});
-
-describe('Get query string', () => {
-  it('method should be defined', () => {
-    expect(fetchResource.getQueryString).toBeInstanceOf(Function);
-  });
-
-  it('should create query string from object', () => {
-    const result1 = fetchResource.getQueryString({
-      coupons: ['SL-6TXY0-QB524OT'],
+      expect(response).toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
     });
-    const result2 = fetchResource.getQueryString(
-      { coupons: ['SL-6TXY0-QB524OT'] },
-      { queryParamsDecodeMode: 'array' }
-    );
-    const result3 = fetchResource.getQueryString(
-      { coupons: ['SL-6TXY0-QB524OT'] },
-      {
-        queryParamsDecodeMode: 'array',
-        timeOffset: false,
-      }
-    );
-    const result4 = fetchResource.getQueryString(
-      { coupons: [] },
-      { queryParamsDecodeMode: 'array' }
-    );
-    expect(result1).toEqual('coupons=SL-6TXY0-QB524OT&timeoffset=180');
-    expect(result2).toEqual('coupons[]=SL-6TXY0-QB524OT&timeoffset=180');
-    expect(result3).toEqual('coupons[]=SL-6TXY0-QB524OT');
-    expect(result4).toEqual('timeoffset=180');
+    it('should catch error response', async () => {
+      await fetchResource.delete('test_url');
+      expect(fetchResource.delete('test_url')).rejects.toEqual(
+        expect.objectContaining({
+          _status: expect.any(Number),
+          data: expect.anything(),
+        })
+      );
+    });
+  });
+
+  describe('Set headers', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.setHeaders).toBeInstanceOf(Function);
+    });
+
+    it('should store headers', () => {
+      const headers = { Authorization: 'X' };
+      fetchResource.setHeaders(headers);
+      const savedHeaders = (fetchResource as any).defaultOptions.headers;
+      expect(savedHeaders).toEqual(headers);
+    });
+
+    it('should send headers on each request', async () => {
+      const headers = { Authorization: 'X' };
+      fetchResource.setHeaders(headers);
+      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      await fetchResource.get('test_url');
+      expect(fetchMock).toHaveBeenCalledWith(
+        expectedUrl,
+        expect.objectContaining({ headers: expect.objectContaining(headers) })
+      );
+    });
+  });
+
+  describe('Clear headers', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.clearHeaders).toBeInstanceOf(Function);
+    });
+    it('should clear headers', () => {
+      const headers = { Authorization: 'X' };
+      fetchResource.setHeaders(headers);
+      fetchResource.clearHeaders();
+      const savedHeaders = (fetchResource as any).defaultOptions.headers;
+      expect(savedHeaders).toBeUndefined();
+    });
+  });
+
+  describe('Set base path dynamically', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.setBasePath).toBeInstanceOf(Function);
+    });
+
+    it('should change base path', async () => {
+      const newBasePath = 'https://www.newBasePath.ru/';
+      const expectedUrl = expect.stringContaining(`${newBasePath}test_url`);
+      fetchResource.setBasePath(newBasePath);
+      await fetchResource.get('test_url');
+      expect(fetchMock).toHaveBeenCalledWith(expectedUrl, expect.any(Object));
+    });
+  });
+
+  describe('Resolve destination', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.resolveDestination).toBeInstanceOf(Function);
+    });
+
+    it('should create path from parts', () => {
+      const relativePath = 'users';
+      const additionalParts = ['part1', 'part2', 'part3'];
+      const path = fetchResource.resolveDestination(additionalParts, relativePath);
+      expect(path).toEqual('users/part1/part2/part3');
+    });
+  });
+
+  describe('Get query string', () => {
+    it('method should be defined', () => {
+      expect(fetchResource.getQueryString).toBeInstanceOf(Function);
+    });
+
+    it('should create query string from object', () => {
+      const query = fetchResource.getQueryString({
+        coupons: ['SL-6TXY0-QB524OT', '1234'],
+      });
+      expect(query).toEqual('coupons=SL-6TXY0-QB524OT,1234&timeoffset=180');
+    });
+    it('should create query string from object. Decode mode - array', () => {
+      const query = fetchResource.getQueryString(
+        { coupons: ['SL-6TXY0-QB524OT', '1234'] },
+        { queryParamsDecodeMode: 'array' }
+      );
+
+      expect(query).toEqual('coupons[]=SL-6TXY0-QB524OT&coupons[]=1234&timeoffset=180');
+    });
+    it('should create query string from object. Decode mode - array. Without timeOffset', () => {
+      const query = fetchResource.getQueryString(
+        { coupons: ['SL-6TXY0-QB524OT', '1234'] },
+        {
+          queryParamsDecodeMode: 'array',
+          timeOffset: false,
+        }
+      );
+      expect(query).toEqual('coupons[]=SL-6TXY0-QB524OT&coupons[]=1234');
+    });
+    it('should create query string from object. Decode mode - array', () => {
+      const query = fetchResource.getQueryString(
+        { coupons: [] },
+        { queryParamsDecodeMode: 'array' }
+      );
+      expect(query).toEqual('timeoffset=180');
+    });
   });
 });
