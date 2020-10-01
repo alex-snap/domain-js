@@ -294,9 +294,7 @@ describe('BaseRepository', () => {
         .mockResolvedValue(successResourceResponse),
     });
     it('should process array in data field', async () => {
-      const expectedBody = expect.objectContaining({ id: 2, data: 1 });
       const response = await testRepository.load({ id: 2, data: 1 });
-      expect(fakeRestResource.get).toHaveBeenCalledWith(expectedBody);
       expect(response).toEqual(expect.any(Array));
     });
     it('should process string in data field', async () => {

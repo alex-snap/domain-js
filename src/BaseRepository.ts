@@ -168,9 +168,9 @@ export class BaseRepository<
     return result;
   }
 
-  protected async processResponse(
+  protected processResponse(
     response: ResourceResponse
-  ): Promise<EntityMeta | ArrayMeta<Entity, Meta> | string> {
+  ): EntityMeta | ArrayMeta<Entity, Meta> | string {
     if (response == null || typeof response === 'string') {
       return response as null | undefined | string;
     }
