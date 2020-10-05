@@ -16,11 +16,11 @@ export interface BaseEntity {
 }
 
 export interface EntityMeta extends BaseEntity {
-  meta: BaseEntity;
+  meta: BaseMeta;
 }
 
 export interface BaseMeta {
-  [key: string]: unknown;
+  [key: string]: any;
   responseStatus: number;
 }
 
@@ -175,16 +175,19 @@ export class BaseRepository<
       return response as null | undefined | string;
     }
 
-    let { _status, ...entity } = response;
-    const meta = { meta: { responseStatus: _status, ...entity.meta } };
+    const meta: { _status: undefined; meta: Meta } = {
+      _status: undefined,
+      meta: { responseStatus: response._status, ...response.meta },
+    };
     let result: EntityMeta | ArrayMeta<Entity, Meta>;
-    if (entity.data && Array.isArray(entity.data)) {
-      result = Object.assign(entity.data.map(this.encodeEntity, this), meta);
-    } else if (entity && Array.isArray(entity)) {
-      result = Object.assign(entity.map(this.encodeEntity, this), meta);
+    if (response.data && Array.isArray(response.data)) {
+      result = Object.assign(response.data.map(this.encodeEntity, this), meta);
+    } else if (response && Array.isArray(response)) {
+      result = Object.assign(response.map(this.encodeEntity, this), meta);
     } else {
-      result = Object.assign(this.encodeEntity(entity), meta);
+      result = Object.assign(this.encodeEntity(response), meta);
     }
+
     return result;
   }
 

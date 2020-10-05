@@ -290,6 +290,7 @@ describe('BaseRepository', () => {
         .mockResolvedValueOnce('hello world')
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(Object.assign([1, 2, 3, 4], { _status: 200 }))
         .mockResolvedValueOnce({ _status: 200, id: 1, name: 'Johny', birthday: '12.12.1234' })
         .mockResolvedValue(successResourceResponse),
     });
@@ -308,6 +309,10 @@ describe('BaseRepository', () => {
     it('should process undefined', async () => {
       const response = await testRepository.load({ id: 2, data: 1 });
       expect(response).toEqual(undefined);
+    });
+    it('should process undefined', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(expect.arrayContaining([1, 2, 3, 4]));
     });
     it('should process entity in data', async () => {
       const response = await testRepository.load({ id: 2, data: 1 });
