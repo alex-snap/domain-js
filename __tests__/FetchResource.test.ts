@@ -34,7 +34,7 @@ describe('FetchResource', () => {
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
-          method: 'post',
+          method: 'POST',
           body: JSON.stringify({ data: 1 }),
         })
       );
@@ -66,7 +66,7 @@ describe('FetchResource', () => {
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
-          method: 'post',
+          method: 'POST',
           body: JSON.stringify({ data: 1 }),
         })
       );
@@ -95,7 +95,7 @@ describe('FetchResource', () => {
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
-          method: 'put',
+          method: 'PUT',
           body: JSON.stringify({ data: 1 }),
         })
       );
@@ -127,7 +127,7 @@ describe('FetchResource', () => {
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
-          method: 'patch',
+          method: 'PATCH',
           body: JSON.stringify({ data: 1 }),
         })
       );
@@ -158,7 +158,7 @@ describe('FetchResource', () => {
       const response = await fetchResource.get('test_url');
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
-        expect.objectContaining({ method: 'get' })
+        expect.objectContaining({ method: 'GET' })
       );
       expect(response).toEqual(
         expect.objectContaining({
@@ -186,7 +186,7 @@ describe('FetchResource', () => {
       });
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
-        expect.objectContaining({ method: 'get' })
+        expect.objectContaining({ method: 'GET' })
       );
     });
     it('should pass query params array as array in request', async () => {
@@ -203,7 +203,7 @@ describe('FetchResource', () => {
       );
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
-        expect.objectContaining({ method: 'get' })
+        expect.objectContaining({ method: 'GET' })
       );
     });
   });
@@ -217,7 +217,7 @@ describe('FetchResource', () => {
       const response = await fetchResource.delete('test_url');
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
-        expect.objectContaining({ method: 'delete' })
+        expect.objectContaining({ method: 'DELETE' })
       );
       expect(response).toEqual(
         expect.objectContaining({

@@ -3,7 +3,7 @@ import { ContentTypes } from './enums/ContentTypes';
 import 'whatwg-fetch';
 import { extractBlobContent, extractFormData } from './helpers';
 
-export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
+export type FetchRequestMethod = 'POST' | 'PUT' | 'GET' | 'DELETE' | 'PATCH';
 
 export interface FetchOptions {
   isFormData?: boolean;
@@ -74,7 +74,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'post',
+      method: 'POST',
       url,
       options,
       body,
@@ -88,7 +88,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'put',
+      method: 'PUT',
       url,
       options,
       body,
@@ -102,7 +102,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'patch',
+      method: 'PATCH',
       url,
       options,
       body,
@@ -116,7 +116,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'get',
+      method: 'GET',
       url,
       options: { ...options, queryParams },
     });
@@ -129,7 +129,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'delete',
+      method: 'DELETE',
       url,
       options,
       body,
