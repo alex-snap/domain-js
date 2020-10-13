@@ -171,7 +171,7 @@ export class BaseRepository<
   protected processResponse(
     response: ResourceResponse
   ): EntityMeta | ArrayMeta<Entity, Meta> | string {
-    if (response == null || typeof response === 'string') {
+    if (response == null || typeof response === 'string' || typeof response === 'boolean') {
       return response as null | undefined | string;
     }
 

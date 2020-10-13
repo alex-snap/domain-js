@@ -288,6 +288,8 @@ describe('BaseRepository', () => {
         .fn()
         .mockResolvedValueOnce({ ...successResourceResponse, data: [1, 2, 3] })
         .mockResolvedValueOnce('hello world')
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false)
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce(Object.assign([1, 2, 3, 4], { _status: 200 }))
@@ -301,6 +303,14 @@ describe('BaseRepository', () => {
     it('should process string in data field', async () => {
       const response = await testRepository.load({ id: 2, data: 1 });
       expect(response).toEqual(expect.any(String));
+    });
+    it('should process false', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toBeTruthy();
+    });
+    it('should process false', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toBeFalsy();
     });
     it('should process null', async () => {
       const response = await testRepository.load({ id: 2, data: 1 });
