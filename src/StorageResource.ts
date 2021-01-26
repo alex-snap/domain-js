@@ -1,15 +1,16 @@
 import { BaseResource } from './interfaces/BaseResource';
 import { Storage } from './interfaces/Storage';
 import { uuid } from './helpers';
+import { StorageResourceOptions } from "./interfaces/StorageResourceOptions";
 
 export class StorageResource implements BaseResource {
   constructor(
     private storageKey: string,
     protected storage: Storage,
-    private defaultOptions: any = {}
+    private defaultOptions: StorageResourceOptions = {}
   ) {}
 
-  public post(path: string, body: any, options?: any): Promise<any> {
+  public post(path: string, body: any, options?: StorageResourceOptions): Promise<any> {
     if (options?.entityIdName != null) {
       const id = uuid();
       const resultPath = `${path}/${id}`;
@@ -24,7 +25,7 @@ export class StorageResource implements BaseResource {
     return this.storage.setItem(path, body).then((data) => this.processExtractedData(data));
   }
 
-  public put(path: string, body: any, options?: any): Promise<any> {
+  public put(path: string, body: any, options?: StorageResourceOptions): Promise<any> {
     return this.storage.setItem(path, body).then((data) => this.processExtractedData(data));
   }
 
@@ -35,7 +36,7 @@ export class StorageResource implements BaseResource {
     });
   }
 
-  public get(path: string, body?: any, options?: any): Promise<any> {
+  public get(path: string, body?: any, options?: StorageResourceOptions): Promise<any> {
     return this.storage.getItem(path).then((data) => this.processExtractedData(data));
   }
 

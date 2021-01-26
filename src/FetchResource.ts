@@ -1,46 +1,12 @@
 import { ResourceResponse, BaseResource } from './interfaces/BaseResource';
 import { ContentTypes } from './enums/ContentTypes';
-import 'whatwg-fetch';
+// import 'whatwg-fetch';
 import { extractBlobContent, extractFormData } from './helpers';
+import { FetchResourceOptions } from "./interfaces/FetchResourceOptions";
 
 export type FetchRequestMethod = 'POST' | 'PUT' | 'GET' | 'DELETE' | 'PATCH';
 
-export interface FetchOptions {
-  isFormData?: boolean;
-  trailingSlash?: boolean;
-  headers?: HeadersInit;
-  responseType?: string;
-  contentType?: ContentTypes;
-  accessType?: string;
-  mode?: RequestMode;
-  cache?: RequestCache;
-  credentials?: RequestCredentials;
-  redirect?: RequestRedirect;
-  referrer?: 'no-referrer' | 'client';
-  timeOffset?: boolean;
-  handleError?: (payload: { response: Response; parsedBody: any }) => any;
-  queryParamsDecodeMode?: 'comma' | 'array';
-  queryParams?: any;
-  canSendRequest?: () => Promise<{ can: boolean; error: Error }>;
-  // params?: any
-  // todo
-  // Добавить проверку перед тем как отправить запрос
-  // можно ли его слать (пример, если нет интернета или любое другое условие)
-  // то есть перехватить и вернуть другую ошибку
-}
-
-export interface FetchRequestOptions {
-  method: FetchRequestMethod;
-  headers?: HeadersInit;
-  mode?: RequestMode;
-  cache?: RequestCache;
-  credentials?: RequestCredentials;
-  redirect?: RequestRedirect;
-  referrer?: string;
-  body?: any;
-}
-
-export const DefaultFetchOptions: FetchOptions = {
+export const DefaultFetchOptions: FetchResourceOptions = {
   headers: {},
   trailingSlash: true,
   responseType: 'json',
@@ -57,11 +23,11 @@ export const DefaultFetchOptions: FetchOptions = {
 };
 
 export class FetchResource implements BaseResource {
-  protected defaultOptions: FetchOptions;
+  protected defaultOptions: FetchResourceOptions;
 
   constructor(
     protected baseUrl: string,
-    defaultOptions?: FetchOptions,
+    defaultOptions?: FetchResourceOptions,
     protected fetchClient = fetch
   ) {
     this.defaultOptions = { ...DefaultFetchOptions, ...defaultOptions };
@@ -71,7 +37,7 @@ export class FetchResource implements BaseResource {
   public post(
     url: string,
     body?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'POST',
@@ -85,7 +51,7 @@ export class FetchResource implements BaseResource {
   public put(
     url: string,
     body?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'PUT',
@@ -99,7 +65,7 @@ export class FetchResource implements BaseResource {
   public patch(
     url: string,
     body?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'PATCH',
@@ -113,7 +79,7 @@ export class FetchResource implements BaseResource {
   public get(
     url: string,
     queryParams?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'GET',
@@ -126,7 +92,7 @@ export class FetchResource implements BaseResource {
   public delete(
     url: string,
     body?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'DELETE',
@@ -177,7 +143,7 @@ export class FetchResource implements BaseResource {
     }
   }
 
-  private fetchHandleCode(url: string, options: RequestInit): Promise<any> {
+  private fetchHandleCode(url: string, options: RequestInit, requestOptions?: FetchResourceOptions): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.defaultOptions.canSendRequest !== undefined) {
         const { error, can } = await this.defaultOptions.canSendRequest();
@@ -187,6 +153,9 @@ export class FetchResource implements BaseResource {
       }
       this.fetchClient(url, options)
         .then(async (response: Response) => {
+          if (requestOptions?.rawResponse) {
+            return response;
+          }
           const data = await this.extractResponseContent(response.clone());
           if (typeof data === 'object') {
             Object.assign(data, { ['_status']: response.status });
@@ -208,7 +177,7 @@ export class FetchResource implements BaseResource {
 
   private resolveRequestBody(
     body: Record<string, any> | null,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Record<string, any> | string | FormData | null {
     if (options) {
       if (body != null) {
@@ -261,7 +230,7 @@ export class FetchResource implements BaseResource {
   private createRequest(data: {
     method: FetchRequestMethod;
     url: string;
-    options?: FetchOptions;
+    options?: FetchResourceOptions;
     body?: any;
   }): { requestUrl: string; requestOptions: RequestInit } {
     const { method, url, options, body } = data;
@@ -274,7 +243,7 @@ export class FetchResource implements BaseResource {
     return { requestUrl, requestOptions };
   }
 
-  private resolveRequestUrl(url: string, o?: FetchOptions): string {
+  private resolveRequestUrl(url: string, o?: FetchResourceOptions): string {
     if (this.baseUrl == null) {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
@@ -283,13 +252,13 @@ export class FetchResource implements BaseResource {
     return result;
   }
 
-  private resolveRequestOptions(options: FetchOptions) {
+  private resolveRequestOptions(options: FetchResourceOptions) {
     return { ...this.defaultOptions, ...options };
   }
 
   private createRequestOptions(
     method: FetchRequestMethod,
-    options: FetchOptions,
+    options: FetchResourceOptions,
     body?: any
   ): RequestInit {
     return {
@@ -304,7 +273,7 @@ export class FetchResource implements BaseResource {
     };
   }
 
-  private resolveHeaders(options: FetchOptions) {
+  private resolveHeaders(options: FetchResourceOptions) {
     const additionalHeaders: Record<string, string> = {};
     if (options.contentType === ContentTypes.JSON) {
       additionalHeaders['Content-Type'] = 'application/json';
@@ -320,7 +289,7 @@ export class FetchResource implements BaseResource {
 
   public getQueryString(
     params: Record<string, string | number | boolean | (string | number | boolean)[]> = {},
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): string {
     const { timeOffset, queryParamsDecodeMode } = { ...this.defaultOptions, ...options };
 

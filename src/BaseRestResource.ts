@@ -1,7 +1,8 @@
 import { BaseResource, ResourceResponse } from './interfaces/BaseResource';
+import { FetchResourceOptions } from "./interfaces/FetchResourceOptions";
 
-type Body = Record<string, any>;
-type Options = Record<string, any>;
+type Body = Record<string, any> | FormData;
+type Options = Record<string, FetchResourceOptions>;
 
 export class BaseRestResource {
   protected Constructor = BaseRestResource;
