@@ -1,4 +1,4 @@
-import { get, set, isString, isObject, isFunction } from "../helpers";
+import { get, set, isString, isObject, isFunction } from "../utils/helpers";
 import { BaseMappingMethod } from "./interfaces/BaseMappingMethod";
 import { BaseAttrMapConfig } from "./interfaces/BaseAttrMapConfig";
 

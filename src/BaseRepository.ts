@@ -1,32 +1,18 @@
 import { BaseRestResource } from './BaseRestResource';
 import { BaseDataMapper } from './data-mapper/index';
 
-import { isObject } from './helpers';
+import { isObject } from './utils/helpers';
 import { ResourceResponse } from './interfaces/BaseResource';
+import { BaseEntity } from "./interfaces/BaseEntity";
+import { BaseMeta } from "./interfaces/BaseMeta";
+import { ArrayMeta } from "./interfaces/ArrayMeta";
+import { EntityMeta } from "./interfaces/EntityMeta";
 
 export interface RepositorySettings {
   pageKey: string;
   perPageKey: string;
   sortKey: string;
   searchKey: string;
-}
-
-export interface BaseEntity {
-  [key: string]: unknown;
-}
-
-export interface EntityMeta extends BaseEntity {
-  meta: BaseMeta;
-}
-
-export interface BaseMeta {
-  [key: string]: any;
-  responseStatus: number;
-}
-
-export interface ArrayMeta<Entity extends BaseEntity = BaseEntity, Meta extends BaseMeta = BaseMeta>
-  extends Array<Entity> {
-  meta?: Meta;
 }
 
 const DefaultRepositorySettings = {

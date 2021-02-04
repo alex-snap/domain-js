@@ -1,20 +1,25 @@
 import { BaseRepository } from "./BaseRepository";
 import { BaseRestResource } from "./BaseRestResource";
 import { BaseDataMapper } from "./data-mapper/index";
+import { Constructor } from "./utils/Constructor";
+import { BaseEntity } from "./interfaces/BaseEntity";
+import { BaseMeta } from "./interfaces/BaseMeta";
 
-export class BaseRepositoryBuilder {
+export class BaseRepositoryBuilder<
+  Entity extends BaseEntity = BaseEntity,
+  Meta extends BaseMeta = BaseMeta
+  > {
   constructor(
-    private Repository: typeof BaseRepository,
-    private dataMapper?: BaseDataMapper<any, any>,
-    private resource: BaseRestResource = null,
+    private Repository: Constructor<BaseRepository<Entity, Meta>>,
+    private dataMapper?: BaseDataMapper<any, any>
     ) {
   }
 
-  public build(Resource = this.resource) {
-    if (!Resource) {
+  public build(resource: BaseRestResource) {
+    if (!resource) {
       throw new TypeError('BaseRepositoryBuilder#build(): Resource should be defined');
     }
 
-    return new (this.Repository)(Resource, this.dataMapper);
+    return new (this.Repository)(resource, this.dataMapper);
   }
 }

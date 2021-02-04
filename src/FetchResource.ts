@@ -1,7 +1,7 @@
 import { ResourceResponse, BaseResource } from './interfaces/BaseResource';
 import { ContentTypes } from './enums/ContentTypes';
 import 'whatwg-fetch';
-import { extractBlobContent, extractFormData } from './helpers';
+import { extractBlobContent, extractFormData } from './utils/helpers';
 
 export type FetchRequestMethod = 'POST' | 'PUT' | 'GET' | 'DELETE' | 'PATCH';
 

@@ -1,4 +1,4 @@
-import { get, set } from '../src/helpers';
+import { get, set } from '../src/utils/helpers';
 
 describe('Get', () => {
   it('should return value', async () => {
