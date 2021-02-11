@@ -194,6 +194,13 @@ export class BaseMapType {
     return resultAttributePath;
   }
 
+  static resolveIsNullable(attrMapConfig: object | string) {
+    if (isObject(attrMapConfig)) {
+      return Boolean((attrMapConfig as any).nullable);
+    }
+    return false
+  }
+
   static encodeAttribute(
     decodedObject: object,
     attrMapConfig: BaseAttrMapConfig,
@@ -227,7 +234,7 @@ export class BaseMapType {
       const encodedAttributePath = strategyKeys[strategyKeysCount];
       const attrMapConfig = strategy[encodedAttributePath];
       const decodedAttributePath = BaseMapType.resolveDecodedValuePath(attrMapConfig, encodedAttributePath);
-
+      const isNullable = BaseMapType.resolveIsNullable(attrMapConfig);
       if (decodedAttributePath) {
         const decodedValue = BaseMapType.decodeAttribute(
           encodedObject,
@@ -235,7 +242,7 @@ export class BaseMapType {
           encodedAttributePath
         );
 
-        if (decodedValue != null) {
+        if (decodedValue != null || isNullable) {
           set(result, decodedAttributePath, decodedValue);
         }
       }
@@ -253,6 +260,7 @@ export class BaseMapType {
       const resultAttributePath = strategyKeys[strategyKeysCount];
       const attrMapConfig = strategy[resultAttributePath];
       const decodedAttributePath = BaseMapType.resolveDecodedValuePath(attrMapConfig, resultAttributePath);
+      const isNullable = BaseMapType.resolveIsNullable(attrMapConfig);
       if (resultAttributePath) {
         const encodedValue = BaseMapType.encodeAttribute(
           decodedObject,
@@ -260,7 +268,7 @@ export class BaseMapType {
           decodedAttributePath
         );
 
-        if (encodedValue != null) {
+        if (encodedValue != null || isNullable) {
           set(result, resultAttributePath, encodedValue);
         }
       }
