@@ -20,8 +20,8 @@ interface Encoded {
   }
   roleId: number
   customMap: {
-    id: number
-    title: string
+    value: string
+    label: string
   }
 }
 
@@ -47,10 +47,7 @@ interface Decoded {
     id: number | string
     title: string
   }
-  custom_map: {
-    id: number | string
-    title: string
-  }
+  custom_map: string
 }
 
 let testDataMapper: BaseDataMapper<Encoded, Decoded>;
@@ -81,10 +78,9 @@ beforeEach(() => {
     }).asAttrMap('role'),
     customMap: {
       map: 'custom_map',
-      encode: (value: any) => value && value.custom_map,
-      decode: (value: any) => {
-        return value && `${value.customMap.id}.${value.customMap.title}`;
-      }
+      encode: (value: string) => value ? {value, label: value} : null,
+      decode: (value: {value: string, label: string}) => value ? value.value : null,
+      nullable: true,
     }
   }
 
@@ -543,3 +539,35 @@ describe('arrayOf', () => {
 });
 
 // todo shapeOf, encodeEntityKey, decodeEntityKey
+
+describe('customMap', () => {
+  // Encode
+  // -----------------
+  it('encoded key should be properly mapped', () => {
+    const result = testDataMapper.encode({ custom_map: 'Value' });
+    expect(result.hasOwnProperty('customMap')).toBeTruthy()
+  })
+  it('encode string should create object with value, label props', () => {
+    const result = testDataMapper.encode({ custom_map: 'Value' });
+    expect(result.customMap).toStrictEqual({ value: 'Value', label: 'Value' });
+  })
+  it('encoded value should be null', () => {
+    const result = testDataMapper.encode({ custom_map: null });
+    expect(result.customMap).toStrictEqual(null);
+  })
+
+  // Decode
+  // -----------------
+  it('decoded key should be properly mapped', () => {
+    const result = testDataMapper.decode({ customMap: {value: 'Value', label: 'Value'} });
+    expect(result.hasOwnProperty('custom_map')).toBeTruthy()
+  })
+  it('decode object should take object value property value', () => {
+    const result = testDataMapper.decode({ customMap: {value: 'Value', label: 'Value'} });
+    expect(result.custom_map).toStrictEqual('Value');
+  })
+  it('decoded value should be null', () => {
+    const result = testDataMapper.decode({ customMap: null });
+    expect(result.custom_map).toStrictEqual(null)
+  })
+});
