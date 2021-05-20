@@ -1,32 +1,18 @@
 import { BaseRestResource } from './BaseRestResource';
 import { BaseDataMapper } from './data-mapper/index';
 
-import { isObject } from './helpers';
+import { isObject } from './utils/helpers';
 import { ResourceResponse } from './interfaces/BaseResource';
+import { BaseEntity } from "./interfaces/BaseEntity";
+import { BaseMeta } from "./interfaces/BaseMeta";
+import { ArrayMeta } from "./interfaces/ArrayMeta";
+import { EntityMeta } from "./interfaces/EntityMeta";
 
 export interface RepositorySettings {
   pageKey: string;
   perPageKey: string;
   sortKey: string;
   searchKey: string;
-}
-
-export interface BaseEntity {
-  [key: string]: unknown;
-}
-
-export interface EntityMeta extends BaseEntity {
-  meta: BaseEntity;
-}
-
-export interface BaseMeta {
-  [key: string]: unknown;
-  responseStatus: number;
-}
-
-export interface ArrayMeta<Entity extends BaseEntity = BaseEntity, Meta extends BaseMeta = BaseMeta>
-  extends Array<Entity> {
-  meta?: Meta;
 }
 
 const DefaultRepositorySettings = {
@@ -168,23 +154,26 @@ export class BaseRepository<
     return result;
   }
 
-  protected async processResponse(
+  protected processResponse(
     response: ResourceResponse
-  ): Promise<EntityMeta | ArrayMeta<Entity, Meta> | string> {
-    if (response == null || typeof response === 'string') {
+  ): EntityMeta | ArrayMeta<Entity, Meta> | string {
+    if (!response || typeof response !== 'object') {
       return response as null | undefined | string;
     }
 
-    let { _status, ...entity } = response;
-    let result: EntityMeta | ArrayMeta<Entity, Meta> = {
-      meta: { responseStatus: _status, ...entity.meta },
+    const meta: { _status: undefined; meta: Meta } = {
+      _status: undefined,
+      meta: { responseStatus: response._status, ...response.meta },
     };
+    let result: EntityMeta | ArrayMeta<Entity, Meta>;
+    if (response.data && Array.isArray(response.data)) {
+      result = Object.assign(response.data.map(this.encodeEntity, this), meta);
+    } else if (response && Array.isArray(response)) {
+      result = Object.assign(response.map(this.encodeEntity, this), meta);
+    } else {
+      result = Object.assign(this.encodeEntity(response), meta);
+    }
 
-    const content =
-      entity.data && Array.isArray(entity.data)
-        ? entity.data.map(this.encodeEntity, this)
-        : this.encodeEntity(entity);
-    Object.assign(result, content);
     return result;
   }
 

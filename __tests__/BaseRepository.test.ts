@@ -1,11 +1,14 @@
 import { BaseRepository } from '../src/BaseRepository';
 import { BaseRestResource } from '../src/BaseRestResource';
+import { createMock } from '../domain-testing/helpers';
 
 // global
 declare var global: any;
-let testRepository: BaseRepository;
-let fakeRestResource: BaseRestResource;
-let fakeChildRestResource: BaseRestResource;
+class FakeFormData {
+  public append = jest.fn();
+}
+
+(global as any).FormData = FakeFormData;
 
 const successResourceResponse = {
   _status: '200',
@@ -19,161 +22,169 @@ const successRepositoryResponse = {
   },
 };
 
-const createResourceMockResponse = (response?: any) => {
-  return jest.fn().mockImplementation(() => Promise.resolve(response)) as any;
+type SetupOptions = {
+  jestResourceCreateMock?: jest.Mock<any, any>;
+  jestResourceUpdateMock?: jest.Mock<any, any>;
+  jestResourcePatchMock?: jest.Mock<any, any>;
+  jestResourceDeleteMock?: jest.Mock<any, any>;
+  jestResourceGetMock?: jest.Mock<any, any>;
+  jestChildResourceCreateMock?: jest.Mock<any, any>;
+  jestChildResourceUpdateMock?: jest.Mock<any, any>;
+  jestChildResourcePatchMock?: jest.Mock<any, any>;
+  jestChildResourceDeleteMock?: jest.Mock<any, any>;
+  jestChildResourceGetMock?: jest.Mock<any, any>;
 };
 
-class FakeRestResource extends BaseRestResource {
-  constructor(private fakeChildResource?: FakeRestResource) {
-    super(null, null);
-  }
+const setup = (setupOptions: SetupOptions = {}) => {
+  const {
+    jestResourceCreateMock = jest.fn().mockResolvedValue(successResourceResponse),
+    jestResourceUpdateMock = jest.fn().mockResolvedValue(successResourceResponse),
+    jestResourcePatchMock = jest.fn().mockResolvedValue(successResourceResponse),
+    jestResourceDeleteMock = jest.fn().mockResolvedValue(undefined),
+    jestResourceGetMock = jest.fn().mockResolvedValue(successResourceResponse),
 
-  public create = createResourceMockResponse(successResourceResponse);
+    jestChildResourceCreateMock = jest.fn().mockResolvedValue(successResourceResponse),
+    jestChildResourceUpdateMock = jest.fn().mockResolvedValue(successResourceResponse),
+    jestChildResourcePatchMock = jest.fn().mockResolvedValue(successResourceResponse),
+    jestChildResourceDeleteMock = jest.fn().mockResolvedValue(undefined),
+    jestChildResourceGetMock = jest.fn().mockResolvedValue(successResourceResponse),
+  } = setupOptions;
 
-  public update = createResourceMockResponse(successResourceResponse);
-
-  public patch = createResourceMockResponse(successResourceResponse);
-
-  public get = createResourceMockResponse(successResourceResponse);
-
-  public delete = createResourceMockResponse();
-
-  public child(...routeParts: Array<number | string>): BaseRestResource {
-    return this.fakeChildResource;
-  }
-
-  public getRequestResource(): any {
-    return null;
-  }
-}
-
-class FakeFormData {
-  public append = jest.fn();
-}
-
-(global as any).FormData = FakeFormData;
-
-beforeEach(async () => {
-  fakeChildRestResource = new FakeRestResource();
-  fakeRestResource = new FakeRestResource(fakeChildRestResource);
-  testRepository = new BaseRepository(fakeRestResource);
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
-
-describe('BaseRepository instance', () => {
-  it('testRepository instance of BaseRepository', async () => {
-    expect(testRepository).toBeInstanceOf(BaseRepository);
+  const fakeChildRestResource = createMock<BaseRestResource>({
+    create: jestChildResourceCreateMock,
+    update: jestChildResourceUpdateMock,
+    patch: jestChildResourcePatchMock,
+    get: jestChildResourceGetMock,
+    delete: jestChildResourceDeleteMock,
+    child() {
+      return this;
+    },
+    getRequestResource() {
+      return null;
+    },
   });
-});
-
-describe('Create method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.create).toBeInstanceOf(Function);
+  const fakeRestResource = createMock<BaseRestResource>({
+    create: jestResourceCreateMock,
+    update: jestResourceUpdateMock,
+    patch: jestResourcePatchMock,
+    get: jestResourceGetMock,
+    delete: jestResourceDeleteMock,
+    child() {
+      return fakeChildRestResource;
+    },
+    getRequestResource() {
+      return null;
+    },
   });
-  it('should called with expected params', async () => {
-    try {
+  const testRepository = new BaseRepository(fakeRestResource);
+  return { fakeChildRestResource, fakeRestResource, testRepository };
+};
+
+describe('BaseRepository', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('BaseRepository instance', () => {
+    const { testRepository } = setup();
+    it('testRepository instance of BaseRepository', async () => {
+      expect(testRepository).toBeInstanceOf(BaseRepository);
+    });
+  });
+
+  describe('Create method', () => {
+    const { fakeRestResource, testRepository } = setup();
+
+    it('method should be defined', () => {
+      expect(testRepository.create).toBeInstanceOf(Function);
+    });
+    it('should called with expected params', async () => {
       const expectedBody = expect.objectContaining({ data: 1 });
       const response = await testRepository.create({ data: 1 });
       expect(fakeRestResource.create).toHaveBeenCalledWith(expectedBody);
       expect(response).toBeDefined();
       expect(response).toEqual(successRepositoryResponse);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('Update method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.update).toBeInstanceOf(Function);
-  });
-  it('should called with expected params', async () => {
-    try {
+  describe('Update method', () => {
+    const { fakeChildRestResource, testRepository } = setup();
+
+    it('method should be defined', () => {
+      const { testRepository } = setup();
+      expect(testRepository.update).toBeInstanceOf(Function);
+    });
+    it('should called with expected params', async () => {
       const expectedBody = expect.objectContaining({ id: 2, data: 1 });
       const response = await testRepository.update({ id: 2, data: 1 });
       expect(fakeChildRestResource.update).toHaveBeenCalledWith(expectedBody);
       expect(response).toBeDefined();
       expect(response).toEqual(successRepositoryResponse);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('Patch method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.patch).toBeInstanceOf(Function);
-  });
-  it('should called with expected params', async () => {
-    try {
+  describe('Patch method', () => {
+    const { fakeChildRestResource, testRepository } = setup();
+
+    it('method should be defined', () => {
+      expect(testRepository.patch).toBeInstanceOf(Function);
+    });
+    it('should called with expected params', async () => {
       const expectedBody = expect.objectContaining({ id: 2, data: 1 });
       const response = await testRepository.patch({ id: 2, data: 1 });
       expect(fakeChildRestResource.patch).toHaveBeenCalledWith(expectedBody);
       expect(response).toBeDefined();
       expect(response).toEqual(successRepositoryResponse);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('Load method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.load).toBeInstanceOf(Function);
-  });
-  it('should called with expected params', async () => {
-    try {
+  describe('Load method', () => {
+    const { fakeRestResource, testRepository } = setup();
+
+    it('method should be defined', () => {
+      expect(testRepository.load).toBeInstanceOf(Function);
+    });
+
+    it('should called with expected params', async () => {
       const expectedBody = expect.objectContaining({ id: 2, data: 1 });
       const response = await testRepository.load({ id: 2, data: 1 });
       expect(fakeRestResource.get).toHaveBeenCalledWith(expectedBody);
       expect(response).toBeDefined();
       expect(response).toEqual(successRepositoryResponse);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('LoadById method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.loadById).toBeInstanceOf(Function);
-  });
-  it('should called with expected params', async () => {
-    try {
+  describe('LoadById method', () => {
+    const { fakeChildRestResource, testRepository } = setup();
+    it('method should be defined', () => {
+      expect(testRepository.loadById).toBeInstanceOf(Function);
+    });
+    it('should called with expected params', async () => {
       const response = await testRepository.loadById(2);
       expect(fakeChildRestResource.get).toHaveBeenCalledWith(undefined);
       expect(response).toBeDefined();
       expect(response).toEqual(successRepositoryResponse);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('Delete method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.delete).toBeInstanceOf(Function);
-  });
-  it('should called with expected params', async () => {
-    try {
+  describe('Delete method', () => {
+    const { fakeChildRestResource, testRepository } = setup();
+    it('method should be defined', () => {
+      expect(testRepository.delete).toBeInstanceOf(Function);
+    });
+    it('should called with expected params', async () => {
       const response = await testRepository.delete({ id: 2, data: 1 });
       expect(fakeChildRestResource.delete).toHaveBeenCalledWith();
       expect(response).toBeUndefined();
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('Search method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.search).toBeInstanceOf(Function);
-  });
-  it('should called with expected params', async () => {
-    try {
+  describe('Search method', () => {
+    const { fakeRestResource, testRepository } = setup();
+    it('method should be defined', () => {
+      expect(testRepository.search).toBeInstanceOf(Function);
+    });
+    it('should called with expected params', async () => {
       const expectedBody = expect.objectContaining({
         search: { id: 2, data: 1 },
         page: 1,
@@ -190,12 +201,8 @@ describe('Search method', () => {
       expect(fakeRestResource.get).toHaveBeenCalledWith(expectedBody);
       expect(response).toBeDefined();
       expect(response).toEqual(successRepositoryResponse);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
-  });
-  it('should called with expected params in another settings', async () => {
-    try {
+    });
+    it('should called with expected params in another settings', async () => {
       testRepository.setSettings({
         pageKey: 'p',
         perPageKey: 'pp',
@@ -218,18 +225,16 @@ describe('Search method', () => {
       expect(fakeRestResource.get).toHaveBeenCalledWith(expectedBody);
       expect(response).toBeDefined();
       expect(response).toEqual(successRepositoryResponse);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('isEntityNew method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.isEntityNew).toBeInstanceOf(Function);
-  });
-  it('should detect is entity new by identificator', async () => {
-    try {
+  describe('isEntityNew method', () => {
+    const { fakeRestResource, testRepository } = setup();
+
+    it('method should be defined', () => {
+      expect(testRepository.isEntityNew).toBeInstanceOf(Function);
+    });
+    it('should detect is entity new by identificator', async () => {
       const isNew1 = testRepository.isEntityNew({ data: 1 });
       const isNew2 = testRepository.isEntityNew({ id: 2, data: 1 });
       expect(isNew1).toBeTruthy();
@@ -246,18 +251,15 @@ describe('isEntityNew method', () => {
       expect(isNew3).toBeTruthy();
       expect(isNew4).toBeTruthy();
       expect(isNew5).toBeFalsy();
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('setDefaultQueryParams method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.setDefaultQueryParams).toBeInstanceOf(Function);
-  });
-  it('should set default query params', async () => {
-    try {
+  describe('setDefaultQueryParams method', () => {
+    const { fakeRestResource, testRepository } = setup();
+    it('method should be defined', () => {
+      expect(testRepository.setDefaultQueryParams).toBeInstanceOf(Function);
+    });
+    it('should set default query params', async () => {
       testRepository.setDefaultQueryParams({ always: 'send with get' });
       const response = await testRepository.load({ id: 2, data: 1 });
       expect(fakeRestResource.get).toHaveBeenCalledWith({
@@ -266,25 +268,92 @@ describe('setDefaultQueryParams method', () => {
         params: { always: 'send with get' },
       });
       expect(response).toEqual(successRepositoryResponse);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-describe('getResource method', () => {
-  it('method should be defined', () => {
-    expect(testRepository.getResource).toBeInstanceOf(Function);
-  });
-  it('should set default query params', async () => {
-    try {
+  describe('getResource method', () => {
+    const { fakeRestResource, testRepository } = setup();
+    it('method should be defined', () => {
+      expect(testRepository.getResource).toBeInstanceOf(Function);
+    });
+    it('should set default query params', async () => {
       const result = testRepository.getResource();
       expect(result).toBe(fakeRestResource);
-    } catch (error) {
-      expect(error).toBeNull();
-    }
+    });
   });
-});
 
-// 1) todo processResponse with array / undefined|null
-// 2) catch errors
+  describe('Process response', () => {
+    const { fakeRestResource, testRepository } = setup({
+      jestResourceGetMock: jest
+        .fn()
+        .mockResolvedValueOnce({ ...successResourceResponse, data: [1, 2, 3] })
+        .mockResolvedValueOnce('hello world')
+        .mockResolvedValueOnce(1)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(Object.assign([1, 2, 3, 4], { _status: 200 }))
+        .mockResolvedValueOnce({ _status: 200, id: 1, name: 'Johny', birthday: '12.12.1234' })
+        .mockResolvedValue(successResourceResponse),
+    });
+    it('should process array in data field', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(expect.any(Array));
+    });
+    it('should process string in data field', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(expect.any(String));
+    });
+    it('should process false', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(expect.any(Number));
+    });
+    it('should process true', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toBe(true);
+    });
+    it('should process false', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toBe(false);
+    });
+    it('should process null', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(null);
+    });
+    it('should process undefined', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(undefined);
+    });
+    it('should process undefined', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(expect.arrayContaining([1, 2, 3, 4]));
+    });
+    it('should process entity in data', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(
+        expect.objectContaining({
+          meta: expect.objectContaining({
+            responseStatus: expect.anything(),
+          }),
+          id: expect.anything(),
+          name: expect.anything(),
+          birthday: expect.anything(),
+        })
+      );
+    });
+    it('should remove contain only meta and data', async () => {
+      const response = await testRepository.load({ id: 2, data: 1 });
+      expect(response).toEqual(
+        expect.objectContaining({
+          meta: expect.objectContaining({
+            responseStatus: expect.anything(),
+          }),
+          data: expect.any(String),
+        })
+      );
+    });
+  });
+
+  // 2) catch errors
+});

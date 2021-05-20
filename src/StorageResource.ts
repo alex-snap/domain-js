@@ -1,6 +1,6 @@
 import { BaseResource } from './interfaces/BaseResource';
 import { Storage } from './interfaces/Storage';
-import { uuid } from './helpers';
+import { uuid } from './utils/helpers';
 
 export class StorageResource implements BaseResource {
   constructor(

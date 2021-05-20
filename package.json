@@ -1,6 +1,6 @@
 {
   "name": "@snap-alex/domain-js",
-  "version": "4.0.0",
+  "version": "5.0.1",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
   "description": "Generics classes for managing entities and collections by async requests",
@@ -16,7 +16,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm test"
+      "pre-commit": "npm test"
     }
   },
   "repository": {

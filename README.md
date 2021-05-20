@@ -141,6 +141,54 @@ const bookRepository = new BookRepository<Book>(bookResource)
 userRepository.update({ uuid: '101js1mx12jkej', title: 'Tom' }) as Promise<Book>;
 ```
 
+### Build repository for child entities dynamically (RepositoryBuilder)
+For example we have users with subscriptions<br>
+Subscriptions are located at ../api/users/:id/subscriptions
+
+```typescript
+import { 
+  BaseRepository, 
+  BaseRepositoryBuilder, 
+  FetchResource, 
+  BaseRestResource, 
+  BaseEntity 
+} from "@snap-alex/domain-js";
+
+// Create base resource
+const httpResource = new FetchResource('https://www.example.com/api/v0');
+
+// Create resource for users
+const userResource = new BaseRestResource(httpResource, 'users');
+
+// Describe Subscription entity interface
+interface Subscription extends BaseEntity {
+  id: number
+  expirationDate: string
+}
+
+// Create Subscription repository class
+class SubscriptionRepository extends BaseRepository<Subscription> {
+}
+
+// Create our repository builder with additional method
+class SubscriptionRepositoryBuilder extends BaseRepositoryBuilder<Subscription> {
+  public buildWithUserId(userId: number): SubscriptionRepository {
+    const resource = userResource.child(userId, 'subscriptions');
+    return this.build(resource) as SubscriptionRepository;
+  }
+}
+
+// Create builder instance with
+const subscriptionRepositoryBuilder = new SubscriptionRepositoryBuilder(SubscriptionRepository);
+
+// Create repository dynamically
+const subscriptionRepository = subscriptionRepositoryBuilder.buildWithUserId(2);
+
+// Load Subscriptions 
+// GET on https://www.example.com/api/v0/users/2/subscriptions
+subscriptionRepository.load();
+```
+
 ## Advanced
 
 ### Using DataMappers

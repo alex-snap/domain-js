@@ -1,9 +1,9 @@
 import { ResourceResponse, BaseResource } from './interfaces/BaseResource';
 import { ContentTypes } from './enums/ContentTypes';
 import 'whatwg-fetch';
-import { decodeQueryString, extractBlobContent, extractFormData } from './helpers';
+import { decodeQueryString, extractBlobContent, extractFormData } from './utils/helpers';
 
-export type FetchRequestMethod = 'post' | 'put' | 'get' | 'delete' | 'patch';
+export type FetchRequestMethod = 'POST' | 'PUT' | 'GET' | 'DELETE' | 'PATCH';
 
 export interface FetchOptions {
   isFormData?: boolean;
@@ -74,7 +74,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'post',
+      method: 'POST',
       url,
       options,
       body,
@@ -88,7 +88,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'put',
+      method: 'PUT',
       url,
       options,
       body,
@@ -102,7 +102,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'patch',
+      method: 'PATCH',
       url,
       options,
       body,
@@ -116,7 +116,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'get',
+      method: 'GET',
       url,
       options: { ...options, queryParams },
     });
@@ -129,7 +129,7 @@ export class FetchResource implements BaseResource {
     options?: FetchOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
-      method: 'delete',
+      method: 'DELETE',
       url,
       options,
       body,
@@ -165,9 +165,9 @@ export class FetchResource implements BaseResource {
   private async extractResponseContent(
     response: Response
   ): Promise<{ [key: string]: any } | string> {
-    const responseContentType = response.headers.get('content-type');
+    const responseContentType = response.headers.get('content-type') || '';
     if (responseContentType.indexOf('application/json') > -1) {
-      return response.json<Record<string | number | symbol, any>>();
+      return response.json();
     } else if (responseContentType.indexOf('application/octet-stream') > -1) {
       return extractBlobContent(await response.blob());
     } else if (responseContentType.indexOf('multipart/form-data') > -1) {
