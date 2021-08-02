@@ -1,3 +1,5 @@
+import { FetchOptions } from "../resources/fetch/FetchOptions";
+
 export type ResourceResponse =
   | {
       [key: string]: any;
@@ -5,16 +7,18 @@ export type ResourceResponse =
     }
   | string;
 
+export type BaseResourceOptions = FetchOptions;
+
 export interface BaseResource {
-  post(path: string, body: Record<string, any>, options?: any): Promise<ResourceResponse>;
+  post(path: string, body: any, options?: BaseResourceOptions): Promise<ResourceResponse>;
 
-  put(path: string, body: Record<string, any>, options?: any): Promise<ResourceResponse>;
+  put(path: string, body: any, options?: BaseResourceOptions): Promise<ResourceResponse>;
 
-  patch(path: string, body: Record<string, any>, options?: any): Promise<ResourceResponse>;
+  patch(path: string, body: any, options?: BaseResourceOptions): Promise<ResourceResponse>;
 
-  get(path: string, body: Record<string, any>, options?: any): Promise<ResourceResponse>;
+  get(path: string, body: any, options?: BaseResourceOptions): Promise<ResourceResponse>;
 
-  delete(path: string, body?: Record<string, any>, options?: any): Promise<ResourceResponse>;
+  delete(path: string, body?: any, options?: BaseResourceOptions): Promise<ResourceResponse>;
 
   setHeaders(headers: Record<string, any>): void;
 

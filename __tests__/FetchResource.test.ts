@@ -1,4 +1,5 @@
-import { FetchResource, DefaultFetchOptions } from '../src/FetchResource';
+import { FetchResource } from '../src/resources/fetch/FetchResource';
+import { DefaultFetchOptions } from '../src/resources/fetch/DefaultFetchOptions';
 import 'whatwg-fetch';
 
 const timeOffset = new Date().getTimezoneOffset() * -1;
