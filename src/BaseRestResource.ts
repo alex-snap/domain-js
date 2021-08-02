@@ -1,7 +1,6 @@
-import { BaseResource, ResourceResponse } from './interfaces/BaseResource';
+import { BaseResource, BaseResourceOptions, ResourceResponse } from './interfaces/BaseResource';
 
 type Body = Record<string, any>;
-type Options = Record<string, any>;
 
 export class BaseRestResource {
   protected Constructor = BaseRestResource;
@@ -9,26 +8,26 @@ export class BaseRestResource {
   constructor(
     private resource: BaseResource,
     private resourceUrl: string,
-    private options?: Options
+    private options?: BaseResourceOptions
   ) {}
 
-  public create(body: Body, options?: Options): Promise<ResourceResponse> {
+  public create(body: Body, options?: BaseResourceOptions): Promise<ResourceResponse> {
     return this.resource.post(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public update(body: Body, options?: Options): Promise<ResourceResponse> {
+  public update(body: Body, options?: BaseResourceOptions): Promise<ResourceResponse> {
     return this.resource.put(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public patch(body: Body, options?: Options): Promise<ResourceResponse> {
+  public patch(body: Body, options?: BaseResourceOptions): Promise<ResourceResponse> {
     return this.resource.patch(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public get(body?: Body, options?: Options): Promise<ResourceResponse> {
+  public get(body?: Body, options?: BaseResourceOptions): Promise<ResourceResponse> {
     return this.resource.get(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public delete(body?: Body, options?: Options): Promise<ResourceResponse> {
+  public delete(body?: Body, options?: BaseResourceOptions): Promise<ResourceResponse> {
     return this.resource.delete(this.resourceUrl, body, this.createOptions(options));
   }
 
@@ -41,7 +40,7 @@ export class BaseRestResource {
     return this.resource;
   }
 
-  private createOptions(options: Options): Options {
+  private createOptions(options: BaseResourceOptions): BaseResourceOptions {
     return Object.assign({}, this.options, options);
   }
 }
