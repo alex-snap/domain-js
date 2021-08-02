@@ -1,7 +1,13 @@
 export * from './BaseRepository';
 export * from './BaseRepositoryBuilder';
 export * from './BaseRestResource';
-export * from './FetchResource';
+
+export * from './resources/fetch/FetchResource';
+export * from './resources/fetch/FetchOptions';
+export * from './resources/fetch/DefaultFetchOptions';
+export * from './resources/fetch/FetchRequestMethod';
+export * from './resources/fetch/FetchRequestOptions';
+
 export * from './StorageResource';
 
 export * from './data-mapper/index';

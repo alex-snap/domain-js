@@ -27,7 +27,7 @@ export class BaseRepository<
   Meta extends BaseMeta = BaseMeta
 > {
   protected requestEntityWrap = (decodedData: any) => decodedData;
-  protected entityIdName: string = 'id';
+  protected entityIdKey: string = 'id';
   protected settings: RepositorySettings = DefaultRepositorySettings;
   protected defaultQueryParams: Record<string, any>;
 
@@ -120,7 +120,7 @@ export class BaseRepository<
   }
 
   public isEntityNew(entity: Entity) {
-    return entity[this.entityIdName] == null;
+    return entity[this.entityIdKey] == null;
   }
 
   public setDefaultQueryParams(params: Record<string, any>) {
@@ -197,7 +197,7 @@ export class BaseRepository<
     param: { [key: string]: string | number } | string
   ): undefined | string | number {
     if (isObject(param)) {
-      return param[this.entityIdName];
+      return param[this.entityIdKey];
     }
     return param;
   }

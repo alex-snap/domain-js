@@ -1,60 +1,10 @@
-import { ResourceResponse, BaseResource } from './interfaces/BaseResource';
-import { ContentTypes } from './enums/ContentTypes';
+import { ResourceResponse, BaseResource } from '../../interfaces/BaseResource';
+import { ContentTypes } from '../../enums/ContentTypes';
 import 'whatwg-fetch';
-import { extractBlobContent, extractFormData } from './utils/helpers';
-
-export type FetchRequestMethod = 'POST' | 'PUT' | 'GET' | 'DELETE' | 'PATCH';
-
-export interface FetchOptions {
-  isFormData?: boolean;
-  trailingSlash?: boolean;
-  headers?: HeadersInit;
-  responseType?: string;
-  contentType?: ContentTypes;
-  accessType?: string;
-  mode?: RequestMode;
-  cache?: RequestCache;
-  credentials?: RequestCredentials;
-  redirect?: RequestRedirect;
-  referrer?: 'no-referrer' | 'client';
-  timeOffset?: boolean;
-  handleError?: (payload: { response: Response; parsedBody: any }) => any;
-  queryParamsDecodeMode?: 'comma' | 'array';
-  queryParams?: any;
-  canSendRequest?: () => Promise<{ can: boolean; error: Error }>;
-  // params?: any
-  // todo
-  // Добавить проверку перед тем как отправить запрос
-  // можно ли его слать (пример, если нет интернета или любое другое условие)
-  // то есть перехватить и вернуть другую ошибку
-}
-
-export interface FetchRequestOptions {
-  method: FetchRequestMethod;
-  headers?: HeadersInit;
-  mode?: RequestMode;
-  cache?: RequestCache;
-  credentials?: RequestCredentials;
-  redirect?: RequestRedirect;
-  referrer?: string;
-  body?: any;
-}
-
-export const DefaultFetchOptions: FetchOptions = {
-  headers: {},
-  trailingSlash: true,
-  responseType: 'json',
-  contentType: ContentTypes.JSON,
-  accessType: 'json',
-  mode: 'same-origin',
-  cache: 'default',
-  credentials: 'same-origin',
-  redirect: 'follow',
-  referrer: 'client',
-  timeOffset: true,
-  handleError: undefined,
-  queryParamsDecodeMode: 'comma',
-};
+import { FetchOptions } from "./FetchOptions";
+import { DefaultFetchOptions } from "./DefaultFetchOptions";
+import { FetchRequestMethod } from "./FetchRequestMethod";
+import { createRequestOptions, extractResponseContent } from "./helpers";
 
 export class FetchResource implements BaseResource {
   protected defaultOptions: FetchOptions;
@@ -162,21 +112,6 @@ export class FetchResource implements BaseResource {
     });
   }
 
-  private async extractResponseContent(
-    response: Response
-  ): Promise<{ [key: string]: any } | string> {
-    const responseContentType = response.headers.get('content-type') || '';
-    if (responseContentType.indexOf('application/json') > -1) {
-      return response.json<Record<string | number | symbol, any>>();
-    } else if (responseContentType.indexOf('application/octet-stream') > -1) {
-      return extractBlobContent(await response.blob());
-    } else if (responseContentType.indexOf('multipart/form-data') > -1) {
-      return extractFormData(await response.formData());
-    } else {
-      return response.text();
-    }
-  }
-
   private fetchHandleCode(url: string, options: RequestInit): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.defaultOptions.canSendRequest !== undefined) {
@@ -187,7 +122,7 @@ export class FetchResource implements BaseResource {
       }
       this.fetchClient(url, options)
         .then(async (response: Response) => {
-          const data = await this.extractResponseContent(response.clone());
+          const data = await extractResponseContent(response.clone());
           if (typeof data === 'object') {
             Object.assign(data, { ['_status']: response.status });
           }
@@ -268,7 +203,7 @@ export class FetchResource implements BaseResource {
     const mergedOptions = this.resolveRequestOptions(options);
     let requestUrl = this.resolveRequestUrl(url, mergedOptions);
     const decodedBody = this.resolveRequestBody(body, options);
-    const requestOptions = this.createRequestOptions(method, mergedOptions, decodedBody);
+    const requestOptions = createRequestOptions(method, mergedOptions, decodedBody);
     const query = this.getQueryString(options?.queryParams, options);
     requestUrl = [requestUrl, query].filter(Boolean).join('?');
     return { requestUrl, requestOptions };
@@ -279,43 +214,11 @@ export class FetchResource implements BaseResource {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
     const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
-    let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
-    return result;
+    return (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
   }
 
   private resolveRequestOptions(options: FetchOptions) {
     return { ...this.defaultOptions, ...options };
-  }
-
-  private createRequestOptions(
-    method: FetchRequestMethod,
-    options: FetchOptions,
-    body?: any
-  ): RequestInit {
-    return {
-      method,
-      body: body ?? undefined,
-      headers: this.resolveHeaders(options),
-      mode: options.mode,
-      cache: options.cache,
-      credentials: options.credentials,
-      redirect: options.redirect,
-      referrer: options.referrer,
-    };
-  }
-
-  private resolveHeaders(options: FetchOptions) {
-    const additionalHeaders: Record<string, string> = {};
-    if (options.contentType === ContentTypes.JSON) {
-      additionalHeaders['Content-Type'] = 'application/json';
-    } else if (options.contentType === ContentTypes.FORM_DATA) {
-      additionalHeaders['Content-Type'] = 'multipart/form-data';
-    }
-    if (options.responseType === 'json') {
-      additionalHeaders['Accept'] = 'application/json';
-    }
-
-    return { ...options.headers, ...additionalHeaders };
   }
 
   public getQueryString(
