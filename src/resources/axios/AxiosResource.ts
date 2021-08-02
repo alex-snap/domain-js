@@ -1,20 +1,9 @@
-import { ResourceResponse, BaseResource } from './interfaces/BaseResource';
-import { decodeQueryString } from './helpers';
+import { ResourceResponse, BaseResource } from '../../interfaces/BaseResource';
+import { decodeQueryString } from "../../utils/helpers";
 
 import axios, { AxiosRequestConfig } from 'axios';
-
-export type AxiosResourceConfig = AxiosRequestConfig & {
-  trailingSlash?: boolean
-  timeOffset?: boolean
-  queryParamsDecodeMode?: 'comma' | 'array';
-};
-
-export const DefaultAxiosRequestConfig: AxiosResourceConfig = {
-  responseType: 'json',
-  trailingSlash: true,
-  timeOffset: true,
-  queryParamsDecodeMode: 'comma',
-};
+import { AxiosResourceConfig } from './AxiosResourceConfig';
+import { DefaultAxiosRequestConfig } from './DefaultAxiosRequestConfig';
 
 export class AxiosResource implements BaseResource {
 
@@ -125,8 +114,7 @@ export class AxiosResource implements BaseResource {
     }
 
     const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
-    let result = (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
-    return result;
+    return (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
   }
 
 }

@@ -41,6 +41,9 @@
     "webpack-cli": "^3.3.11",
     "whatwg-fetch": "^3.6.2"
   },
+  "peerDependencies": {
+    "axios": "^0.21.1"
+  },
   "engines": {
     "node": ">=12.14.0"
   },
@@ -51,8 +54,5 @@
   "keywords": [],
   "files": [
     "dist/**/*"
-  ],
-  "dependencies": {
-    "axios": "^0.20.0"
-  }
+  ]
 }
