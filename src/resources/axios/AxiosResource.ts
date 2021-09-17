@@ -1,7 +1,7 @@
 import { ResourceResponse, BaseResource } from '../../interfaces/BaseResource';
 import { decodeQueryString } from "../../utils/helpers";
 
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AxiosResourceConfig } from './AxiosResourceConfig';
 import { DefaultAxiosRequestConfig } from './DefaultAxiosRequestConfig';
 
@@ -15,31 +15,31 @@ export class AxiosResource implements BaseResource {
   public post(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
-    return axios.post(targetUrl, body, requestOptions);
+    return this.decorateRequest(axios.post(targetUrl, body, requestOptions));
   }
 
   public put(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
-    return axios.put(targetUrl, body, requestOptions);
+    return this.decorateRequest(axios.put(targetUrl, body, requestOptions));
   }
 
   public patch(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
-    return axios.patch(targetUrl, body, requestOptions);
+    return this.decorateRequest(axios.patch(targetUrl, body, requestOptions));
   }
 
   public get(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: true };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
-    return axios.get(targetUrl, requestOptions);
+    return this.decorateRequest(axios.get(targetUrl, requestOptions));
   }
 
   public delete(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: true };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
-    return axios.delete(targetUrl, requestOptions);
+    return this.decorateRequest(axios.delete(targetUrl, requestOptions));
   }
 
   public setHeaders(headers: Record<string, any>): void {
@@ -69,15 +69,22 @@ export class AxiosResource implements BaseResource {
 
   public getQueryString(
     params: Record<string, string | number | boolean | (string | number | boolean)[]> = {},
-    options?: AxiosRequestConfig
+    options?: AxiosResourceConfig
   ): string {
-    const { timeOffset, queryParamsDecodeMode } = { ...this.defaultOptions, ...options };
-
-    if (timeOffset) {
-      params['timeoffset'] = new Date().getTimezoneOffset() * -1;
-    }
-
+    const { queryParamsDecodeMode } = { ...this.defaultOptions, ...options };
     return decodeQueryString(params, queryParamsDecodeMode);
+  }
+
+  private handleResponse(response: AxiosResponse<any>): ResourceResponse {
+    return { _status: response.status, data: response.data };
+  }
+
+  private decorateRequest(request: Promise<any>): Promise<ResourceResponse> {
+    return request
+      .then((res) => this.handleResponse(res))
+      .catch((error: AxiosError) => {
+        throw { _status: error.code, data: error };
+      })
   }
 
   private resolveRequestParams(settings: {
@@ -85,27 +92,40 @@ export class AxiosResource implements BaseResource {
     options: AxiosResourceConfig,
     useBodyAsQueryParams: boolean,
     body?: Record<string, any>
-  }): { targetUrl: string, requestOptions: AxiosResourceConfig } {
+  }): { targetUrl: string, requestOptions: AxiosRequestConfig } {
     const { path, options, useBodyAsQueryParams, body } = settings;
 
-    let targetUrl = this.resolveRequestUrl(path, options);
-
-    let optionsToUse = options;
+    const resourceConfig = { ...this.defaultOptions, ...options };
+    let requestOptions = this.getRequestOptions(resourceConfig);
     if (useBodyAsQueryParams) {
-      const targetOptionsParams = { ...options?.params || {}, ...(body || {}) };
-      optionsToUse = { ...options, params: targetOptionsParams };
+      const params = { ...options?.params || {}, ...(body || {}) };
+      requestOptions = { ...requestOptions, params };
     }
 
-    const requestOptions = this.getRequestOptions(optionsToUse);
-    const queryParams = this.getQueryString(requestOptions.params, requestOptions);
-    targetUrl = [targetUrl, queryParams].filter(Boolean).join('?');
+    // add timeoffset
+    if (resourceConfig?.timeOffset) {
+      if (!requestOptions?.params) {
+        requestOptions.params = {};
+      }
+      requestOptions.params['timeoffset'] = new Date().getTimezoneOffset() * -1;
+    }
+
+    // add params serializer
+    if (!resourceConfig?.paramsSerializer) {
+      requestOptions.paramsSerializer = function(params) {
+        return decodeQueryString(params, resourceConfig.queryParamsDecodeMode);
+      }
+    }
+
+    const targetUrl = this.resolveRequestUrl(path, resourceConfig);
 
     return { targetUrl, requestOptions };
   }
 
 
-  private getRequestOptions(config?: AxiosResourceConfig): AxiosResourceConfig {
-    return { ...this.defaultOptions, ...config };
+  private getRequestOptions(config?: AxiosResourceConfig): AxiosRequestConfig {
+    const { trailingSlash, queryParamsDecodeMode, timeOffset, ...other } = config;
+    return other;
   }
 
   private resolveRequestUrl(url: string, o?: AxiosResourceConfig): string {
@@ -113,7 +133,7 @@ export class AxiosResource implements BaseResource {
       throw new Error('AxiosResource#resolveRequestUrl: baseUrl is not defined');
     }
 
-    const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
+    const urlPart = `/${url}${o?.trailingSlash ? '/' : ''}`;
     return (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
   }
 

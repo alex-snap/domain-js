@@ -9,10 +9,11 @@
     "build:dev": "webpack --mode development --config webpack.config.dev.js",
     "test": "jest",
     "test:watch:all": "jest --watchAll --verbose",
-    "prepare": "npm run build",
+    "prepack": "npm run build",
     "prepublishOnly": "npm run test",
     "version": "git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "postinstall": "install-peers"
   },
   "husky": {
     "hooks": {
@@ -32,6 +33,7 @@
     "@types/whatwg-fetch": "^0.0.33",
     "babel-loader": "^8.2.2",
     "husky": "^4.3.8",
+    "install-peers-cli": "^2.2.0",
     "jest": "^25.1.0",
     "jest-cli": "^26.6.3",
     "ts-jest": "^25.5.1",
@@ -42,7 +44,7 @@
     "whatwg-fetch": "^3.6.2"
   },
   "peerDependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.x"
   },
   "engines": {
     "node": ">=12.14.0"

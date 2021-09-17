@@ -214,7 +214,7 @@ export class FetchResource implements BaseResource {
     if (this.baseUrl == null) {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
-    const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
+    const urlPart = `/${url}${o?.trailingSlash ? '/' : ''}`;
     return (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
   }
 
