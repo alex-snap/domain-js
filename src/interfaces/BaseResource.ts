@@ -20,7 +20,7 @@ export interface BaseResource {
 
   delete(path: string, body?: any, options?: BaseResourceOptions): Promise<ResourceResponse>;
 
-  setHeaders(headers: object): void;
+  setHeaders(headers: Record<string, any>): void;
 
   clearHeaders(): void;
 

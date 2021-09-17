@@ -1,10 +1,11 @@
 import { ResourceResponse, BaseResource } from '../../interfaces/BaseResource';
 import { ContentTypes } from '../../enums/ContentTypes';
 import 'whatwg-fetch';
-import { FetchOptions } from "./FetchOptions";
-import { DefaultFetchOptions } from "./DefaultFetchOptions";
-import { FetchRequestMethod } from "./FetchRequestMethod";
-import { createRequestOptions, extractResponseContent } from "./helpers";
+import { FetchOptions } from './FetchOptions';
+import { DefaultFetchOptions } from './DefaultFetchOptions';
+import { FetchRequestMethod } from './FetchRequestMethod';
+import { createRequestOptions, extractResponseContent } from './helpers';
+import { decodeQueryString } from '../../utils/helpers';
 
 export class FetchResource implements BaseResource {
   protected defaultOptions: FetchOptions;
@@ -213,7 +214,7 @@ export class FetchResource implements BaseResource {
     if (this.baseUrl == null) {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
-    const urlPart = `/${url}${o.trailingSlash ? '/' : ''}`;
+    const urlPart = `/${url}${o?.trailingSlash ? '/' : ''}`;
     return (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
   }
 
@@ -230,25 +231,6 @@ export class FetchResource implements BaseResource {
     if (timeOffset) {
       params['timeoffset'] = new Date().getTimezoneOffset() * -1;
     }
-
-    return Object.keys(params)
-      .map((k) => {
-        const value = params[k];
-        if (Array.isArray(value)) {
-          switch (queryParamsDecodeMode) {
-            case 'array':
-              return value
-                .map((val) => `${encodeURIComponent(k)}[]=${encodeURIComponent(val)}`)
-                .join('&');
-            case 'comma':
-            default:
-              return `${encodeURIComponent(k)}=${value.join(',')}`;
-          }
-        } else if (value !== null && value !== undefined) {
-          return `${encodeURIComponent(k)}=${encodeURIComponent(value)}`;
-        }
-      })
-      .filter(Boolean)
-      .join('&');
+    return decodeQueryString(params, queryParamsDecodeMode);
   }
 }
