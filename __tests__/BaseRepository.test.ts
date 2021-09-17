@@ -1,5 +1,5 @@
 import { BaseRepository } from '../src/BaseRepository';
-import { createInstances } from "../domain-testing/helpers";
+import { createInstances } from "../test-utils/helpers";
 
 // global
 declare var global: any;
