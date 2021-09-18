@@ -2,41 +2,41 @@ import { ResourceResponse, BaseResource } from '../../interfaces/BaseResource';
 import { decodeQueryString } from "../../utils/helpers";
 
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { AxiosResourceConfig } from './AxiosResourceConfig';
-import { DefaultAxiosRequestConfig } from './DefaultAxiosRequestConfig';
+import { AxiosResourceOptions } from './AxiosResourceOptions';
+import { DefaultAxiosResourceOptions } from './DefaultAxiosResourceOptions';
 
 export class AxiosResource implements BaseResource {
 
   constructor(
     protected baseUrl: string,
-    private defaultOptions: AxiosResourceConfig = DefaultAxiosRequestConfig) {
+    private defaultOptions: AxiosResourceOptions = DefaultAxiosResourceOptions) {
   }
 
-  public post(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
+  public post(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
     return this.decorateRequest(axios.post(targetUrl, body, requestOptions));
   }
 
-  public put(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
+  public put(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
     return this.decorateRequest(axios.put(targetUrl, body, requestOptions));
   }
 
-  public patch(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
+  public patch(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
     return this.decorateRequest(axios.patch(targetUrl, body, requestOptions));
   }
 
-  public get(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
+  public get(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: true };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
     return this.decorateRequest(axios.get(targetUrl, requestOptions));
   }
 
-  public delete(path: string, body?: Record<string, any>, options?: AxiosResourceConfig): Promise<ResourceResponse> {
+  public delete(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: true };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
     return this.decorateRequest(axios.delete(targetUrl, requestOptions));
@@ -69,14 +69,18 @@ export class AxiosResource implements BaseResource {
 
   public getQueryString(
     params: Record<string, string | number | boolean | (string | number | boolean)[]> = {},
-    options?: AxiosResourceConfig
+    options?: AxiosResourceOptions
   ): string {
     const { queryParamsDecodeMode } = { ...this.defaultOptions, ...options };
     return decodeQueryString(params, queryParamsDecodeMode);
   }
 
   private handleResponse(response: AxiosResponse<any>): ResourceResponse {
-    return { _status: response.status, data: response.data };
+    const data = response.data;
+    if (typeof data === 'object') {
+      return Object.assign(data, { ['_status']: response.status });
+    }
+    return data;
   }
 
   private decorateRequest(request: Promise<any>): Promise<ResourceResponse> {
@@ -89,7 +93,7 @@ export class AxiosResource implements BaseResource {
 
   private resolveRequestParams(settings: {
     path: string,
-    options: AxiosResourceConfig,
+    options: AxiosResourceOptions,
     useBodyAsQueryParams: boolean,
     body?: Record<string, any>
   }): { targetUrl: string, requestOptions: AxiosRequestConfig } {
@@ -122,13 +126,12 @@ export class AxiosResource implements BaseResource {
     return { targetUrl, requestOptions };
   }
 
-
-  private getRequestOptions(config?: AxiosResourceConfig): AxiosRequestConfig {
-    const { trailingSlash, queryParamsDecodeMode, timeOffset, ...other } = config;
+  private getRequestOptions(options?: AxiosResourceOptions): AxiosRequestConfig {
+    const { trailingSlash, queryParamsDecodeMode, timeOffset, ...other } = options;
     return other;
   }
 
-  private resolveRequestUrl(url: string, o?: AxiosResourceConfig): string {
+  private resolveRequestUrl(url: string, o?: AxiosResourceOptions): string {
     if (this.baseUrl == null) {
       throw new Error('AxiosResource#resolveRequestUrl: baseUrl is not defined');
     }

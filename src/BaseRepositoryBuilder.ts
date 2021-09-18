@@ -1,4 +1,4 @@
-import { BaseRepository } from "./BaseRepository";
+import { BaseRepository } from "./repository/BaseRepository";
 import { BaseRestResource } from "./BaseRestResource";
 import { BaseDataMapper } from "./data-mapper/index";
 import { Constructor } from "./utils/Constructor";

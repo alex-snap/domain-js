@@ -1,4 +1,4 @@
-import { BaseRepository } from '../src/BaseRepository';
+import { BaseRepository } from '../src/repository/BaseRepository';
 import { BaseRestResource } from '../src/BaseRestResource';
 
 export const createMock = <T>(value?: Partial<T>): T => {

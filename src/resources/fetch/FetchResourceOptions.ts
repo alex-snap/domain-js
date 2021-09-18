@@ -1,7 +1,7 @@
 import { ContentTypes } from "../../enums/ContentTypes";
+import { BaseResourceOptions } from "../../interfaces/BaseResourceOptions";
 
-export interface FetchOptions {
-  trailingSlash?: boolean;
+export interface FetchResourceOptions extends BaseResourceOptions {
   headers?: HeadersInit;
   responseType?: string;
   contentType?: ContentTypes;
@@ -11,14 +11,7 @@ export interface FetchOptions {
   credentials?: RequestCredentials;
   redirect?: RequestRedirect;
   referrer?: 'no-referrer' | 'client';
-  timeOffset?: boolean;
   handleError?: (payload: { response: Response; parsedBody: any }) => any;
-  queryParamsDecodeMode?: 'comma' | 'array';
   queryParams?: any;
   canSendRequest?: () => Promise<{ can: boolean; error: Error }>;
-  // params?: any
-  // todo
-  // Добавить проверку перед тем как отправить запрос
-  // можно ли его слать (пример, если нет интернета или любое другое условие)
-  // то есть перехватить и вернуть другую ошибку
 }

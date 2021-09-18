@@ -1,4 +1,6 @@
-import { BaseResource, BaseResourceOptions, ResourceResponse } from './interfaces/BaseResource';
+import { BaseResource } from './interfaces/BaseResource';
+import { BaseResourceOptions } from "./interfaces/BaseResourceOptions";
+import { ResourceResponse } from "./interfaces/ResourceResponse";
 
 type Body = Record<string, any>;
 
