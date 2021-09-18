@@ -1,7 +1,7 @@
-import { FetchOptions } from "./FetchOptions";
+import { FetchResourceOptions } from "./FetchResourceOptions";
 import { ContentTypes } from "../../enums/ContentTypes";
 
-export const DefaultFetchOptions: FetchOptions = {
+export const DefaultFetchResourceOptions: FetchResourceOptions = {
   headers: {},
   trailingSlash: true,
   responseType: 'json',

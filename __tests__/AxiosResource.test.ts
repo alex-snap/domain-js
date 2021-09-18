@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import { AxiosResource } from "../src/resources/axios/AxiosResource";
-import { DefaultAxiosRequestConfig } from "../src/resources/axios/DefaultAxiosRequestConfig";
+import { DefaultAxiosResourceOptions } from "../src/resources/axios/DefaultAxiosResourceOptions";
 import { createSuccessAxiosResponse } from "../test-utils/axios";
 const baseUrl = 'https://www.google.com/';
 
@@ -58,7 +58,7 @@ describe('AxiosResource', () => {
     });
 
     it('should contain default options', () => {
-      expect((axiosResource as any).defaultOptions).toEqual(DefaultAxiosRequestConfig);
+      expect((axiosResource as any).defaultOptions).toEqual(DefaultAxiosResourceOptions);
     });
   });
 

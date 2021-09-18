@@ -1,12 +1,13 @@
-import { BaseResource } from './interfaces/BaseResource';
-import { Storage } from './interfaces/Storage';
-import { uuid } from './utils/helpers';
+import { BaseResource } from '../../interfaces/BaseResource';
+import { Storage } from '../../interfaces/Storage';
+import { uuid } from '../../utils/helpers';
+import { StorageResourceOptions } from "./StorageResourceOptions";
 
 export class StorageResource implements BaseResource {
   constructor(
     private storageKey: string,
     protected storage: Storage,
-    private defaultOptions: any = {}
+    private defaultOptions: StorageResourceOptions = {}
   ) {}
 
   public post(path: string, body: any, options?: any): Promise<any> {

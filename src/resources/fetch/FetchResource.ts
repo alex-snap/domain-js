@@ -1,28 +1,28 @@
 import { ResourceResponse, BaseResource } from '../../interfaces/BaseResource';
 import { ContentTypes } from '../../enums/ContentTypes';
 import 'whatwg-fetch';
-import { FetchOptions } from './FetchOptions';
-import { DefaultFetchOptions } from './DefaultFetchOptions';
+import { FetchResourceOptions } from './FetchResourceOptions';
+import { DefaultFetchResourceOptions } from './DefaultFetchResourceOptions';
 import { FetchRequestMethod } from './FetchRequestMethod';
 import { createRequestOptions, extractResponseContent } from './helpers';
 import { decodeQueryString } from '../../utils/helpers';
 
 export class FetchResource implements BaseResource {
-  protected defaultOptions: FetchOptions;
+  protected defaultOptions: FetchResourceOptions;
 
   constructor(
     protected baseUrl: string,
-    defaultOptions?: FetchOptions,
+    defaultOptions?: FetchResourceOptions,
     protected fetchClient = fetch
   ) {
-    this.defaultOptions = { ...DefaultFetchOptions, ...defaultOptions };
+    this.defaultOptions = { ...DefaultFetchResourceOptions, ...defaultOptions };
     this.fetchClient = this.fetchClient.bind(this);
   }
 
   public post(
     url: string,
     body?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'POST',
@@ -36,7 +36,7 @@ export class FetchResource implements BaseResource {
   public put(
     url: string,
     body?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'PUT',
@@ -50,7 +50,7 @@ export class FetchResource implements BaseResource {
   public patch(
     url: string,
     body?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'PATCH',
@@ -64,7 +64,7 @@ export class FetchResource implements BaseResource {
   public get(
     url: string,
     queryParams?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'GET',
@@ -77,7 +77,7 @@ export class FetchResource implements BaseResource {
   public delete(
     url: string,
     body?: Record<string, any>,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
     const { requestUrl, requestOptions } = this.createRequest({
       method: 'DELETE',
@@ -144,7 +144,7 @@ export class FetchResource implements BaseResource {
 
   private resolveRequestBody(
     body: Record<string, any> | null,
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): Record<string, any> | string | FormData | null {
     if (options) {
       if (body != null) {
@@ -197,7 +197,7 @@ export class FetchResource implements BaseResource {
   private createRequest(data: {
     method: FetchRequestMethod;
     url: string;
-    options?: FetchOptions;
+    options?: FetchResourceOptions;
     body?: any;
   }): { requestUrl: string; requestOptions: RequestInit } {
     const { method, url, options, body } = data;
@@ -210,7 +210,7 @@ export class FetchResource implements BaseResource {
     return { requestUrl, requestOptions };
   }
 
-  private resolveRequestUrl(url: string, o?: FetchOptions): string {
+  private resolveRequestUrl(url: string, o?: FetchResourceOptions): string {
     if (this.baseUrl == null) {
       throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
     }
@@ -218,13 +218,13 @@ export class FetchResource implements BaseResource {
     return (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
   }
 
-  private resolveRequestOptions(options: FetchOptions) {
+  private resolveRequestOptions(options: FetchResourceOptions) {
     return { ...this.defaultOptions, ...options };
   }
 
   public getQueryString(
     params: Record<string, string | number | boolean | (string | number | boolean)[]> = {},
-    options?: FetchOptions
+    options?: FetchResourceOptions
   ): string {
     const { timeOffset, queryParamsDecodeMode } = { ...this.defaultOptions, ...options };
 

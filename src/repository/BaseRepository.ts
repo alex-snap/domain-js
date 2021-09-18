@@ -1,26 +1,14 @@
-import { BaseRestResource } from './BaseRestResource';
-import { BaseDataMapper } from './data-mapper/index';
+import { BaseRestResource } from '../BaseRestResource';
+import { BaseDataMapper } from '../data-mapper';
 
-import { isObject } from './utils/helpers';
-import { ResourceResponse } from './interfaces/BaseResource';
-import { BaseEntity } from "./interfaces/BaseEntity";
-import { BaseMeta } from "./interfaces/BaseMeta";
-import { ArrayMeta } from "./interfaces/ArrayMeta";
-import { EntityMeta } from "./interfaces/EntityMeta";
-
-export interface RepositorySettings {
-  pageKey: string;
-  perPageKey: string;
-  sortKey: string;
-  searchKey: string;
-}
-
-const DefaultRepositorySettings = {
-  pageKey: 'page',
-  perPageKey: 'per_page',
-  sortKey: 'order',
-  searchKey: 'search',
-};
+import { isObject } from '../utils/helpers';
+import { BaseEntity } from "../interfaces/BaseEntity";
+import { BaseMeta } from "../interfaces/BaseMeta";
+import { ArrayMeta } from "../interfaces/ArrayMeta";
+import { EntityMeta } from "../interfaces/EntityMeta";
+import { RepositorySettings } from "./RepositorySettings";
+import { DefaultRepositorySettings } from "./DefaultRepositorySettings";
+import { ResourceResponse } from "../interfaces/ResourceResponse";
 
 export class BaseRepository<
   Entity extends BaseEntity = BaseEntity,
@@ -161,24 +149,30 @@ export class BaseRepository<
       return response as null | undefined | string;
     }
 
-    const meta: { _status: undefined; meta: Meta } = {
-      _status: undefined,
-      meta: { responseStatus: response._status, ...response.meta },
-    };
+    const meta = { responseStatus: response._status, ...this.settings.extractResponseMeta(response) };
     let result: EntityMeta | ArrayMeta<Entity, Meta>;
-    if (response.data && Array.isArray(response.data)) {
-      result = Object.assign(response.data.map(this.encodeEntity, this), meta);
+    const data = this.settings.extractResponseData(response);
+    if (data && Array.isArray(data)) {
+      result = Object.assign(data.map(this.encodeEntity, this), { meta });
     } else if (response && Array.isArray(response)) {
-      result = Object.assign(response.map(this.encodeEntity, this), meta);
+      result = Object.assign(response.map(this.encodeEntity, this), { meta });
     } else {
-      result = Object.assign(this.encodeEntity(response), meta);
+      result = Object.assign(this.encodeEntity(response), { meta });
     }
 
+    // remove _status from origin object
+    if ((result as any)._status) {
+      delete (result as any)._status;
+    }
     return result;
   }
 
   public setSettings(settings: RepositorySettings): void {
     this.settings = settings;
+  }
+
+  public addSettings(settings: RepositorySettings): void {
+    this.settings = { ...this.settings, ...settings };
   }
 
   /**
@@ -204,15 +198,7 @@ export class BaseRepository<
 
   protected resolveSearchParams(params?: Record<string, any>): object {
     if (params) {
-      const { page, per_page, sort, response, ...search } = params;
-      const searchRequestParams = {
-        [this.settings.searchKey]: search,
-        [this.settings.pageKey]: page,
-        [this.settings.perPageKey]: per_page,
-        [this.settings.sortKey]: sort,
-        response,
-      };
-
+      const searchRequestParams = this.settings.decodeSearchParams(params);
       for (const key of Object.keys(searchRequestParams)) {
         if (searchRequestParams[key] == null || Number.isNaN(searchRequestParams[key])) {
           delete searchRequestParams[key];

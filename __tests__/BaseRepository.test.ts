@@ -1,4 +1,4 @@
-import { BaseRepository } from '../src/BaseRepository';
+import { BaseRepository } from '../src/repository/BaseRepository';
 import { createInstances } from "../test-utils/helpers";
 
 // global
@@ -144,11 +144,11 @@ describe('BaseRepository', () => {
       expect(response).toEqual(successRepositoryResponse);
     });
     it('should called with expected params in another settings', async () => {
-      testRepository.setSettings({
-        pageKey: 'p',
-        perPageKey: 'pp',
-        sortKey: 'sort',
-        searchKey: 'filter',
+      testRepository.addSettings({
+        decodeSearchParams: (params) => {
+          const { page, per_page, sort, response, ...search } = params;
+          return { p: page, pp: per_page, sort, response, filter: search };
+        }
       });
       const expectedBody = expect.objectContaining({
         filter: { id: 2, data: 1 },

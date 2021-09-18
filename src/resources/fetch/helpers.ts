@@ -1,9 +1,9 @@
-import { FetchOptions } from "./FetchOptions";
+import { FetchResourceOptions } from "./FetchResourceOptions";
 import { ContentTypes } from "../../enums/ContentTypes";
 import { FetchRequestMethod } from "./FetchRequestMethod";
 import { extractBlobContent, extractFormData } from "../../utils/helpers";
 
-export function resolveHeaders(options: FetchOptions): {} {
+export function resolveHeaders(options: FetchResourceOptions): {} {
   const additionalHeaders: Record<string, string> = {};
   if (options.contentType === ContentTypes.JSON) {
     additionalHeaders['Content-Type'] = 'application/json';
@@ -19,7 +19,7 @@ export function resolveHeaders(options: FetchOptions): {} {
 
 export function createRequestOptions(
   method: FetchRequestMethod,
-  options: FetchOptions,
+  options: FetchResourceOptions,
   body?: any
 ): RequestInit {
   return {

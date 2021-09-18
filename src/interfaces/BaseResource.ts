@@ -1,13 +1,5 @@
-import { FetchOptions } from "../resources/fetch/FetchOptions";
-
-export type ResourceResponse =
-  | {
-      [key: string]: any;
-      _status: number;
-    }
-  | string;
-
-export type BaseResourceOptions = FetchOptions;
+import { BaseResourceOptions } from "./BaseResourceOptions";
+import { ResourceResponse } from "./ResourceResponse";
 
 export interface BaseResource {
   post(path: string, body: any, options?: BaseResourceOptions): Promise<ResourceResponse>;

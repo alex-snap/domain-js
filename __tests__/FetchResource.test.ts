@@ -1,5 +1,5 @@
 import { FetchResource } from '../src/resources/fetch/FetchResource';
-import { DefaultFetchOptions } from '../src/resources/fetch/DefaultFetchOptions';
+import { DefaultFetchResourceOptions } from '../src/resources/fetch/DefaultFetchResourceOptions';
 import 'whatwg-fetch';
 
 const timeOffset = new Date().getTimezoneOffset() * -1;
@@ -53,7 +53,7 @@ describe('FetchResource', () => {
     });
 
     it('should contain default options', () => {
-      expect((fetchResource as any).defaultOptions).toEqual(DefaultFetchOptions);
+      expect((fetchResource as any).defaultOptions).toEqual(DefaultFetchResourceOptions);
     });
   });
 
