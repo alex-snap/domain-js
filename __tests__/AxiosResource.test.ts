@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-import { AxiosResource } from "../src/resources/axios/AxiosResource";
+import { createSuccessAxiosResponse } from '../test-utils/axios';
+import { AxiosResource } from '../src/resources/axios/AxiosResource';
 import { DefaultAxiosResourceOptions } from "../src/resources/axios/DefaultAxiosResourceOptions";
-import { createSuccessAxiosResponse } from "../test-utils/axios";
 const baseUrl = 'https://www.google.com/';
 
 jest.mock('axios');

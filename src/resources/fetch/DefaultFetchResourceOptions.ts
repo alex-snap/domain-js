@@ -1,5 +1,5 @@
-import { FetchResourceOptions } from "./FetchResourceOptions";
-import { ContentTypes } from "../../enums/ContentTypes";
+import { FetchResourceOptions } from './FetchResourceOptions';
+import { ContentTypes } from '../../enums/ContentTypes';
 
 export const DefaultFetchResourceOptions: FetchResourceOptions = {
   headers: {},

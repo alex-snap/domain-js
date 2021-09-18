@@ -1,7 +1,7 @@
-import { FetchResourceOptions } from "./FetchResourceOptions";
-import { ContentTypes } from "../../enums/ContentTypes";
-import { FetchRequestMethod } from "./FetchRequestMethod";
-import { extractBlobContent, extractFormData } from "../../utils/helpers";
+import { FetchResourceOptions } from './FetchResourceOptions';
+import { ContentTypes } from '../../enums/ContentTypes';
+import { FetchRequestMethod } from './FetchRequestMethod';
+import { extractBlobContent, extractFormData } from '../../utils/helpers';
 
 export function resolveHeaders(options: FetchResourceOptions): {} {
   const additionalHeaders: Record<string, string> = {};

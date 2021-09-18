@@ -1,5 +1,5 @@
-import { RepositorySettings } from "./RepositorySettings";
-import { ResourceResponse } from "../interfaces/ResourceResponse";
+import { RepositorySettings } from './RepositorySettings';
+import { ResourceResponse } from '../interfaces/ResourceResponse';
 
 export const DefaultRepositorySettings: RepositorySettings = {
   extractResponseData: (response: ResourceResponse) => {

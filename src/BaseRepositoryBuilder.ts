@@ -1,9 +1,9 @@
-import { BaseRepository } from "./repository/BaseRepository";
-import { BaseRestResource } from "./BaseRestResource";
-import { BaseDataMapper } from "./data-mapper/index";
-import { Constructor } from "./utils/Constructor";
-import { BaseEntity } from "./interfaces/BaseEntity";
-import { BaseMeta } from "./interfaces/BaseMeta";
+import { BaseRestResource } from './BaseRestResource';
+import { BaseDataMapper } from './data-mapper/index';
+import { Constructor } from './utils/Constructor';
+import { BaseEntity } from './interfaces/BaseEntity';
+import { BaseMeta } from './interfaces/BaseMeta';
+import { BaseRepository } from './repository/BaseRepository';
 
 export class BaseRepositoryBuilder<
   Entity extends BaseEntity = BaseEntity,

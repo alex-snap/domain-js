@@ -2,13 +2,13 @@ import { BaseRestResource } from '../BaseRestResource';
 import { BaseDataMapper } from '../data-mapper';
 
 import { isObject } from '../utils/helpers';
-import { BaseEntity } from "../interfaces/BaseEntity";
-import { BaseMeta } from "../interfaces/BaseMeta";
-import { ArrayMeta } from "../interfaces/ArrayMeta";
-import { EntityMeta } from "../interfaces/EntityMeta";
-import { RepositorySettings } from "./RepositorySettings";
-import { DefaultRepositorySettings } from "./DefaultRepositorySettings";
-import { ResourceResponse } from "../interfaces/ResourceResponse";
+import { BaseEntity } from '../interfaces/BaseEntity';
+import { BaseMeta } from '../interfaces/BaseMeta';
+import { ArrayMeta } from '../interfaces/ArrayMeta';
+import { EntityMeta } from '../interfaces/EntityMeta';
+import { RepositorySettings } from './RepositorySettings';
+import { DefaultRepositorySettings } from './DefaultRepositorySettings';
+import { ResourceResponse } from '../interfaces/ResourceResponse';
 
 export class BaseRepository<
   Entity extends BaseEntity = BaseEntity,

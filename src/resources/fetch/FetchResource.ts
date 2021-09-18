@@ -1,4 +1,4 @@
-import { ResourceResponse, BaseResource } from '../../interfaces/BaseResource';
+import { BaseResource } from '../../interfaces/BaseResource';
 import { ContentTypes } from '../../enums/ContentTypes';
 import 'whatwg-fetch';
 import { FetchResourceOptions } from './FetchResourceOptions';
@@ -6,6 +6,7 @@ import { DefaultFetchResourceOptions } from './DefaultFetchResourceOptions';
 import { FetchRequestMethod } from './FetchRequestMethod';
 import { createRequestOptions, extractResponseContent } from './helpers';
 import { decodeQueryString } from '../../utils/helpers';
+import { ResourceResponse } from '../../interfaces/ResourceResponse';
 
 export class FetchResource implements BaseResource {
   protected defaultOptions: FetchResourceOptions;

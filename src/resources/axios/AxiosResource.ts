@@ -1,9 +1,10 @@
-import { ResourceResponse, BaseResource } from '../../interfaces/BaseResource';
-import { decodeQueryString } from "../../utils/helpers";
+import { BaseResource } from '../../interfaces/BaseResource';
+import { decodeQueryString } from '../../utils/helpers';
 
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AxiosResourceOptions } from './AxiosResourceOptions';
 import { DefaultAxiosResourceOptions } from './DefaultAxiosResourceOptions';
+import { ResourceResponse } from '../../interfaces/ResourceResponse';
 
 export class AxiosResource implements BaseResource {
 

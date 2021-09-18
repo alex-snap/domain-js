@@ -1,5 +1,5 @@
-import { ContentTypes } from "../../enums/ContentTypes";
-import { BaseResourceOptions } from "../../interfaces/BaseResourceOptions";
+import { ContentTypes } from '../../enums/ContentTypes';
+import { BaseResourceOptions } from '../../interfaces/BaseResourceOptions';
 
 export interface FetchResourceOptions extends BaseResourceOptions {
   headers?: HeadersInit;
