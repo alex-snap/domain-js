@@ -1,6 +1,5 @@
 import { BaseResource } from '../../interfaces/BaseResource';
 import { ContentTypes } from '../../enums/ContentTypes';
-import 'whatwg-fetch';
 import { FetchResourceOptions } from './FetchResourceOptions';
 import { DefaultFetchResourceOptions } from './DefaultFetchResourceOptions';
 import { FetchRequestMethod } from './FetchRequestMethod';
@@ -14,10 +13,12 @@ export class FetchResource implements BaseResource {
   constructor(
     protected baseUrl: string,
     defaultOptions?: FetchResourceOptions,
-    protected fetchClient = fetch
+    protected fetchClient?: typeof fetch,
   ) {
     this.defaultOptions = { ...DefaultFetchResourceOptions, ...defaultOptions };
-    this.fetchClient = this.fetchClient.bind(this);
+    if (!fetchClient && typeof fetch === 'function') {
+      this.fetchClient = fetch.bind(window);
+    }
   }
 
   public post(
