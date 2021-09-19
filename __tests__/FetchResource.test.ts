@@ -24,7 +24,6 @@ describe('FetchResource', () => {
   let fetchMock: jest.Mock;
   beforeEach(() => {
     fetchMock = jest.fn().mockResolvedValueOnce(successResponse).mockResolvedValue(failedResponse);
-
     fetchResource = new FetchResource(baseUrl, undefined, fetchMock);
   });
 
