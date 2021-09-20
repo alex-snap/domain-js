@@ -338,4 +338,7 @@ describe('FetchResource', () => {
       expect(query).toEqual('timeoffset=180');
     });
   });
+
+  // todo add tests for file upload
+
 });

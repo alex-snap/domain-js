@@ -1,20 +1,26 @@
 import { FetchResourceOptions } from './FetchResourceOptions';
-import { ContentTypes } from '../../enums/ContentTypes';
+import { ContentTypeEnum } from '../../enums/ContentTypeEnum';
 import { FetchRequestMethod } from './FetchRequestMethod';
-import { extractBlobContent, extractFormData } from '../../utils/helpers';
+import { extractBlobContent, extractFormData, resolveHeaders, transformToFormData } from '../../utils/helpers';
 
-export function resolveHeaders(options: FetchResourceOptions): {} {
-  const additionalHeaders: Record<string, string> = {};
-  if (options.contentType === ContentTypes.JSON) {
-    additionalHeaders['Content-Type'] = 'application/json';
-  } else if (options.contentType === ContentTypes.FORM_DATA) {
-    additionalHeaders['Content-Type'] = 'multipart/form-data';
+export function resolveFetchRequestBody(
+  body: Record<string, any> | null,
+  options?: FetchResourceOptions
+): Record<string, any> | string | FormData | null {
+  if (options) {
+    if (body != null) {
+      if (options.contentType === ContentTypeEnum.FORM_DATA) {
+        return transformToFormData(body);
+      } else if (options.contentType === ContentTypeEnum.JSON) {
+        return JSON.stringify(body);
+      } else if (!!options.contentType) {
+        return body;
+      }
+    } else {
+      return body;
+    }
   }
-  if (options.responseType === 'json') {
-    additionalHeaders['Accept'] = 'application/json';
-  }
-
-  return { ...options.headers, ...additionalHeaders };
+  return JSON.stringify(body);
 }
 
 export function createRequestOptions(

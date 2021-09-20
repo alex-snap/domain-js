@@ -1,10 +1,10 @@
-import { ContentTypes } from '../../enums/ContentTypes';
+import { ContentTypeEnum } from '../../enums/ContentTypeEnum';
 import { BaseResourceOptions } from '../../interfaces/BaseResourceOptions';
 
 export interface FetchResourceOptions extends BaseResourceOptions {
   headers?: HeadersInit;
   responseType?: string;
-  contentType?: ContentTypes;
+  contentType?: ContentTypeEnum;
   accessType?: string;
   mode?: RequestMode;
   cache?: RequestCache;

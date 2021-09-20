@@ -1,10 +1,11 @@
 import { BaseResource } from '../../interfaces/BaseResource';
-import { decodeQueryString } from '../../utils/helpers';
+import { decodeQueryString, resolveHeaders } from '../../utils/helpers';
 
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AxiosResourceOptions } from './AxiosResourceOptions';
 import { DefaultAxiosResourceOptions } from './DefaultAxiosResourceOptions';
 import { ResourceResponse } from '../../interfaces/ResourceResponse';
+import { resolveAxiosRequestBody } from "./helpers";
 
 export class AxiosResource implements BaseResource {
 
@@ -16,19 +17,22 @@ export class AxiosResource implements BaseResource {
   public post(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
-    return this.decorateRequest(axios.post(targetUrl, body, requestOptions));
+    const decodedBody = resolveAxiosRequestBody(body, options);
+    return this.decorateRequest(axios.post(targetUrl, decodedBody, requestOptions));
   }
 
   public put(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
-    return this.decorateRequest(axios.put(targetUrl, body, requestOptions));
+    const decodedBody = resolveAxiosRequestBody(body, options);
+    return this.decorateRequest(axios.put(targetUrl, decodedBody, requestOptions));
   }
 
   public patch(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
     const resolverSettings = { path, options, body, useBodyAsQueryParams: false };
     const { targetUrl, requestOptions } = this.resolveRequestParams(resolverSettings);
-    return this.decorateRequest(axios.patch(targetUrl, body, requestOptions));
+    const decodedBody = resolveAxiosRequestBody(body, options);
+    return this.decorateRequest(axios.patch(targetUrl, decodedBody, requestOptions));
   }
 
   public get(path: string, body?: Record<string, any>, options?: AxiosResourceOptions): Promise<ResourceResponse> {
@@ -121,6 +125,9 @@ export class AxiosResource implements BaseResource {
         return decodeQueryString(params, resourceConfig.queryParamsDecodeMode);
       }
     }
+
+    // if form data, use headers
+    requestOptions.headers = resolveHeaders(requestOptions);
 
     const targetUrl = this.resolveRequestUrl(path, resourceConfig);
 
