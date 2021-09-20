@@ -1,10 +1,9 @@
 import { BaseResource } from '../../interfaces/BaseResource';
-import { ContentTypes } from '../../enums/ContentTypes';
 import { FetchResourceOptions } from './FetchResourceOptions';
 import { DefaultFetchResourceOptions } from './DefaultFetchResourceOptions';
 import { FetchRequestMethod } from './FetchRequestMethod';
-import { createRequestOptions, extractResponseContent } from './helpers';
-import { decodeQueryString } from '../../utils/helpers';
+import { createRequestOptions, extractResponseContent, resolveFetchRequestBody } from './helpers';
+import { decodeQueryString, } from '../../utils/helpers';
 import { ResourceResponse } from '../../interfaces/ResourceResponse';
 
 export class FetchResource implements BaseResource {
@@ -144,58 +143,6 @@ export class FetchResource implements BaseResource {
     });
   }
 
-  private resolveRequestBody(
-    body: Record<string, any> | null,
-    options?: FetchResourceOptions
-  ): Record<string, any> | string | FormData | null {
-    if (options) {
-      if (body != null) {
-        if (options.contentType === ContentTypes.FORM_DATA) {
-          return this.transformToFormData(body);
-        } else if (options.contentType === ContentTypes.JSON) {
-          return JSON.stringify(body);
-        } else if (!!options.contentType) {
-          return body;
-        }
-      } else {
-        return body;
-      }
-    }
-    return JSON.stringify(body);
-  }
-
-  private transformToFormData(
-    body: Record<string, any>,
-    form?: FormData,
-    namespace?: string
-  ): FormData {
-    const formData = form || new FormData();
-    for (const property in body) {
-      const value = body[property];
-      if (!body.hasOwnProperty(property) || !value) {
-        continue;
-      }
-      const formKey = namespace
-        ? Array.isArray(body)
-          ? `${namespace}[]`
-          : `${namespace}[${property}]`
-        : property;
-      if (value instanceof Date) {
-        formData.append(formKey, (value as Date).toISOString());
-      } else if (this.isFile(value)) {
-        this.transformToFormData(value, formData, formKey);
-      } else {
-        formData.append(formKey, value);
-      }
-    }
-    return formData;
-  }
-
-  private isFile(value: any): boolean {
-    // todo realize for React Native
-    return typeof value === 'object'; //&& !(value instanceof File)
-  }
-
   private createRequest(data: {
     method: FetchRequestMethod;
     url: string;
@@ -205,7 +152,7 @@ export class FetchResource implements BaseResource {
     const { method, url, options, body } = data;
     const mergedOptions = this.resolveRequestOptions(options);
     let requestUrl = this.resolveRequestUrl(url, mergedOptions);
-    const decodedBody = this.resolveRequestBody(body, options);
+    const decodedBody = resolveFetchRequestBody(body, options);
     const requestOptions = createRequestOptions(method, mergedOptions, decodedBody);
     const query = this.getQueryString(options?.queryParams, options);
     requestUrl = [requestUrl, query].filter(Boolean).join('?');

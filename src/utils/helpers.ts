@@ -1,3 +1,6 @@
+import { FetchResourceOptions } from "../resources/fetch/FetchResourceOptions";
+import { ContentTypeEnum } from "../enums/ContentTypeEnum";
+
 const hasOwnProp = Object.prototype.hasOwnProperty;
 
 export function get(obj: any, path: string) {
@@ -123,4 +126,50 @@ export function decodeQueryString(
     })
     .filter(Boolean)
     .join('&');
+}
+
+export function transformToFormData(
+  body: Record<string, any>,
+  form?: FormData,
+  namespace?: string
+): FormData {
+  const formData = form || new FormData();
+  for (const property in body) {
+    const value = body[property];
+    if (!body.hasOwnProperty(property) || !value) {
+      continue;
+    }
+    const formKey = namespace
+      ? Array.isArray(body)
+        ? `${namespace}[]`
+        : `${namespace}[${property}]`
+      : property;
+    if (value instanceof Date) {
+      formData.append(formKey, (value as Date).toISOString());
+    } else if (isFile(value)) {
+      transformToFormData(value, formData, formKey);
+    } else {
+      formData.append(formKey, value);
+    }
+  }
+  return formData;
+}
+
+export function isFile(value: any): boolean {
+  // todo realize for React Native
+  return typeof value === 'object'; //&& !(value instanceof File)
+}
+
+export function resolveHeaders(options: FetchResourceOptions): {} {
+  const additionalHeaders: Record<string, string> = {};
+  if (options.contentType === ContentTypeEnum.JSON) {
+    additionalHeaders['Content-Type'] = 'application/json';
+  } else if (options.contentType === ContentTypeEnum.FORM_DATA) {
+    additionalHeaders['Content-Type'] = 'multipart/form-data';
+  }
+  if (options.responseType === 'json') {
+    additionalHeaders['Accept'] = 'application/json';
+  }
+
+  return { ...options.headers, ...additionalHeaders };
 }

@@ -26,3 +26,5 @@ export * from './interfaces/BaseEntity';
 export * from './interfaces/BaseMeta';
 export * from './interfaces/EntityMeta';
 export * from './interfaces/ResourceResponse';
+
+export * from './enums/ContentTypeEnum';

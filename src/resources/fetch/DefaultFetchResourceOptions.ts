@@ -1,11 +1,11 @@
 import { FetchResourceOptions } from './FetchResourceOptions';
-import { ContentTypes } from '../../enums/ContentTypes';
+import { ContentTypeEnum } from '../../enums/ContentTypeEnum';
 
 export const DefaultFetchResourceOptions: FetchResourceOptions = {
   headers: {},
   trailingSlash: true,
   responseType: 'json',
-  contentType: ContentTypes.JSON,
+  contentType: ContentTypeEnum.JSON,
   accessType: 'json',
   mode: 'same-origin',
   cache: 'default',

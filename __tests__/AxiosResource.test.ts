@@ -370,4 +370,7 @@ describe('AxiosResource', () => {
       expect(query).toEqual('coupons[]=SL-6TXY0-QB524OT&coupons[]=1234');
     });
   });
+
+  // todo add tests for file upload
+
 });
