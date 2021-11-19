@@ -3,7 +3,7 @@ import { FetchResourceOptions } from './FetchResourceOptions';
 import { DefaultFetchResourceOptions } from './DefaultFetchResourceOptions';
 import { FetchRequestMethod } from './FetchRequestMethod';
 import { createRequestOptions, extractResponseContent, resolveFetchRequestBody } from './helpers';
-import { decodeQueryString, } from '../../utils/helpers';
+import { decodeQueryString, } from '../../utils';
 import { ResourceResponse } from '../../interfaces/ResourceResponse';
 
 export class FetchResource implements BaseResource {
@@ -12,12 +12,9 @@ export class FetchResource implements BaseResource {
   constructor(
     protected baseUrl: string,
     defaultOptions?: FetchResourceOptions,
-    protected fetchClient?: typeof fetch,
+    protected _fetchClient?: typeof fetch,
   ) {
     this.defaultOptions = { ...DefaultFetchResourceOptions, ...defaultOptions };
-    if (!fetchClient && typeof fetch === 'function') {
-      this.fetchClient = fetch.bind(window);
-    }
   }
 
   public post(
@@ -181,5 +178,9 @@ export class FetchResource implements BaseResource {
       params['timeoffset'] = new Date().getTimezoneOffset() * -1;
     }
     return decodeQueryString(params, queryParamsDecodeMode);
+  }
+
+  private get fetchClient() {
+    return this._fetchClient || fetch;
   }
 }
