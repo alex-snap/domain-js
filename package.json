@@ -1,8 +1,8 @@
 {
   "name": "@snap-alex/domain-js",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "main": "dist/index.js",
-  "types": "dist/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "description": "Generics classes for managing entities and collections by async requests",
   "scripts": {
     "build": "webpack --mode production",
