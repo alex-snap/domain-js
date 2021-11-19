@@ -1,6 +1,6 @@
-export type ResourceResponse =
-  | {
-  [key: string]: any;
-  _status: number;
+type WithStatus = {
+  _status?: number;
 }
-  | string;
+
+export type ResourceResponse<T = any> = T & WithStatus;
+
