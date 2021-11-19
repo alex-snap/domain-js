@@ -2,7 +2,7 @@ import { BaseResource } from './interfaces/BaseResource';
 import { BaseResourceOptions } from "./interfaces/BaseResourceOptions";
 import { ResourceResponse } from "./interfaces/ResourceResponse";
 
-type Body = Record<string, any>;
+type Body = Record<string, any> | null;
 
 export class BaseRestResource {
   protected Constructor = BaseRestResource;
@@ -13,15 +13,15 @@ export class BaseRestResource {
     private options?: BaseResourceOptions
   ) {}
 
-  public create(body: Body, options?: BaseResourceOptions): Promise<ResourceResponse> {
+  public create(body: Body = null, options?: BaseResourceOptions): Promise<ResourceResponse> {
     return this.resource.post(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public update(body: Body, options?: BaseResourceOptions): Promise<ResourceResponse> {
+  public update(body: Body = null, options?: BaseResourceOptions): Promise<ResourceResponse> {
     return this.resource.put(this.resourceUrl, body, this.createOptions(options));
   }
 
-  public patch(body: Body, options?: BaseResourceOptions): Promise<ResourceResponse> {
+  public patch(body: Body = null, options?: BaseResourceOptions): Promise<ResourceResponse> {
     return this.resource.patch(this.resourceUrl, body, this.createOptions(options));
   }
 
