@@ -1,3 +1,2 @@
-export interface BaseEntity {
-  [key: string]: unknown;
-}
+export type BaseEntity = Record<string, any>;
+
