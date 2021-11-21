@@ -24,11 +24,11 @@ export class BaseRepository<
     private dataMapper?: BaseDataMapper<any, any>
   ) {}
 
-  public save(entity: Entity): Promise<Entity> {
+  public save(entity: Partial<Entity> | Entity): Promise<Entity> {
     return this[this.isEntityNew(entity) ? 'create' : 'update'](entity) as Promise<Entity>;
   }
 
-  public create(entity: Entity): Promise<Entity> {
+  public create(entity: Partial<Entity> | Entity): Promise<Entity> {
     const entityData = this.prepareEntityForRequest(entity);
     const query = this.createQuery(entityData);
     return this.resource()
@@ -36,7 +36,7 @@ export class BaseRepository<
       .then((res) => this.processResponse(res)) as Promise<Entity>;
   }
 
-  public update(entity: Entity): Promise<Entity> {
+  public update(entity: Partial<Entity> | Entity): Promise<Entity> {
     if (this.isEntityNew(entity)) {
       throw new Error('BaseRepository#update(): you can not update a new entity');
     }
@@ -47,7 +47,7 @@ export class BaseRepository<
       .then((res) => this.processResponse(res)) as Promise<Entity>;
   }
 
-  public patch(entity: Entity): Promise<Entity> {
+  public patch(entity: Partial<Entity> | Entity): Promise<Entity> {
     if (this.isEntityNew(entity)) {
       throw new Error('BaseRepository#update(): you can not patch a new entity');
     }
@@ -90,7 +90,7 @@ export class BaseRepository<
     return Promise.all(promisesBatch);
   }
 
-  public delete(entity: Entity): Promise<void> {
+  public delete(entity: Partial<Entity> | Entity): Promise<void> {
     if (this.isEntityNew(entity)) {
       throw new Error('BaseRepository#delete(): you can not update a new entity');
     }
@@ -107,7 +107,7 @@ export class BaseRepository<
       .then((res) => this.processResponse(res)) as Promise<ArrayMeta<Entity, Meta>>;
   }
 
-  public isEntityNew(entity: Entity) {
+  public isEntityNew(entity: Partial<Entity> | Entity) {
     return entity[this.entityIdKey] == null;
   }
 
@@ -119,7 +119,7 @@ export class BaseRepository<
     return this.restResource;
   }
 
-  protected resource(entity: Entity): BaseRestResource;
+  protected resource(entity: Partial<Entity> | Entity): BaseRestResource;
   protected resource(...params: (undefined | string | number)[]): BaseRestResource;
   protected resource(...params: never): BaseRestResource;
   protected resource(...params: any[]) {
@@ -131,7 +131,7 @@ export class BaseRepository<
     return this.restResource;
   }
 
-  protected prepareEntityForRequest(entity: Entity): Entity {
+  protected prepareEntityForRequest(entity: Partial<Entity> | Entity): Partial<Entity> | Entity {
     let result = entity;
     if (this.dataMapper) {
       result = this.dataMapper.decode(entity);
