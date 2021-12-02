@@ -204,10 +204,11 @@ export class BaseMapType {
   static encodeAttribute(
     decodedObject: object,
     attrMapConfig: BaseAttrMapConfig,
-    decodedAttributePath: string) {
+    decodedAttributePath: string,
+    result: any) {
     const decodedValue = get(decodedObject, decodedAttributePath);
     if (isFunction(attrMapConfig.encode)) {
-      return attrMapConfig.encode(decodedValue, decodedObject)
+      return attrMapConfig.encode(decodedValue, decodedObject, result)
     }
 
     return decodedValue;
@@ -215,11 +216,12 @@ export class BaseMapType {
 
   static decodeAttribute(encodedObject: any,
     attrMapConfig: BaseAttrMapConfig,
-    encodedAttributePath: string) {
+    encodedAttributePath: string,
+    result: any) {
 
     const encodedValue = encodedObject[encodedAttributePath];
     if (isFunction(attrMapConfig.decode)) {
-      return attrMapConfig.decode(encodedValue, encodedObject);
+      return attrMapConfig.decode(encodedValue, encodedObject, result);
     }
 
     return encodedValue;
@@ -239,7 +241,8 @@ export class BaseMapType {
         const decodedValue = BaseMapType.decodeAttribute(
           encodedObject,
           attrMapConfig,
-          encodedAttributePath
+          encodedAttributePath,
+          result,
         );
 
         if (decodedValue != null || isNullable) {
@@ -265,7 +268,8 @@ export class BaseMapType {
         const encodedValue = BaseMapType.encodeAttribute(
           decodedObject,
           attrMapConfig,
-          decodedAttributePath
+          decodedAttributePath,
+          result
         );
 
         if (encodedValue != null || isNullable) {
