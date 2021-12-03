@@ -10,10 +10,7 @@ import { RepositorySettings } from './RepositorySettings';
 import { DefaultRepositorySettings } from './DefaultRepositorySettings';
 import { ResourceResponse } from '../interfaces/ResourceResponse';
 
-export class BaseRepository<
-  Entity extends BaseEntity = BaseEntity,
-  Meta extends BaseMeta = BaseMeta
-> {
+export class BaseRepository<Entity = BaseEntity, EntityList = ArrayMeta<Entity>, Meta = BaseMeta> {
   protected requestEntityWrap = (decodedData: any) => decodedData;
   protected entityIdKey: string = 'id';
   protected settings: RepositorySettings = DefaultRepositorySettings;
@@ -58,7 +55,7 @@ export class BaseRepository<
       .then((res) => this.processResponse(res)) as Promise<Entity>;
   }
 
-  public load(params?: object): Promise<ArrayMeta<Entity, Meta>> {
+  public load(params?: object): Promise<EntityList> {
     let query;
     if (this.defaultQueryParams != null) {
       query = Object.assign({}, { params: this.defaultQueryParams }, params);
@@ -67,7 +64,7 @@ export class BaseRepository<
     }
     return this.resource()
       .get(query)
-      .then((res) => this.processResponse(res)) as Promise<ArrayMeta<Entity, Meta>>;
+      .then((res) => this.processResponse(res)) as Promise<EntityList>;
   }
 
   public loadById(id: string | number, params?: object): Promise<Entity> {
@@ -99,16 +96,16 @@ export class BaseRepository<
       .then((res) => this.processResponse(res)) as Promise<void>;
   }
 
-  public search(params?: Record<string, any>): Promise<ArrayMeta<Entity, Meta>> {
+  public search(params?: Record<string, any>): Promise<EntityList> {
     const searchParams = this.resolveSearchParams(params);
     const requestBody = Object.assign({}, searchParams, this.defaultQueryParams);
     return this.resource()
       .get(requestBody)
-      .then((res) => this.processResponse(res)) as Promise<ArrayMeta<Entity, Meta>>;
+      .then((res) => this.processResponse(res)) as Promise<EntityList>;
   }
 
   public isEntityNew(entity: Partial<Entity> | Entity) {
-    return entity[this.entityIdKey] == null;
+    return (entity as any)[this.entityIdKey] == null;
   }
 
   public setDefaultQueryParams(params: Record<string, any>) {
@@ -144,20 +141,27 @@ export class BaseRepository<
 
   protected processResponse(
     response: ResourceResponse
-  ): EntityMeta | ArrayMeta<Entity, Meta> | string {
+  ): EntityMeta | ArrayMeta<Entity, Meta> | Entity | string {
     if (!response || typeof response !== 'object') {
       return response as null | undefined | string;
     }
 
-    const meta = { responseStatus: response._status, ...this.settings.extractResponseMeta(response) };
-    let result: EntityMeta | ArrayMeta<Entity, Meta>;
-    const data = this.settings.extractResponseData(response);
+    let meta;
+    if (this.settings.extractResponseMeta) {
+      meta = { responseStatus: response._status, ...this.settings.extractResponseMeta(response) };
+    }
+    let result: EntityMeta | ArrayMeta<Entity, Meta> | Entity;
+    const data = this.settings.extractResponseData && this.settings.extractResponseData(response);
     if (data && Array.isArray(data)) {
-      result = Object.assign(data.map(this.encodeEntity, this), { meta });
+      result = data.map(this.encodeEntity, this);
     } else if (response && Array.isArray(response)) {
-      result = Object.assign(response.map(this.encodeEntity, this), { meta });
+      result = response.map(this.encodeEntity, this);
     } else {
-      result = Object.assign(this.encodeEntity(response), { meta });
+      result = this.encodeEntity(response);
+    }
+
+    if (meta) {
+      (result as any)['meta'] = meta;
     }
 
     // remove _status from origin object
@@ -179,7 +183,7 @@ export class BaseRepository<
    * Private helpers methods
    */
 
-  private createQuery(entityData: FormData | object) {
+  private createQuery(entityData: FormData | any) {
     if (entityData instanceof FormData) {
       return entityData;
     }

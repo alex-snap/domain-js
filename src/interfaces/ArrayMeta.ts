@@ -1,7 +1,7 @@
 import { BaseEntity } from "./BaseEntity";
 import { BaseMeta } from "./BaseMeta";
 
-export interface ArrayMeta<Entity extends BaseEntity = BaseEntity, Meta extends BaseMeta = BaseMeta>
+export interface ArrayMeta<Entity = BaseEntity, Meta = BaseMeta>
   extends Array<Entity> {
   meta?: Meta;
 }

@@ -2,6 +2,6 @@ import { ResourceResponse } from '../interfaces/ResourceResponse';
 
 export interface RepositorySettings {
   extractResponseData?: (response: ResourceResponse) => any;
-  extractResponseMeta?: (response: ResourceResponse) => any;
-  decodeSearchParams?: (params: Record<string, any>) => any;
+  extractResponseMeta?: (response: ResourceResponse) => any | null;
+  decodeSearchParams?: (params: Record<string, any>) => any | null;
 }
