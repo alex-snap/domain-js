@@ -281,7 +281,7 @@ export class BaseMapType {
     return result;
   }
 
-  static decorateWithAsAttrMap(dataMapper: BaseMappingMethod): BaseMappingMethod {
+  static decorateWithAsAttrMap(dataMapper: Partial<BaseMappingMethod>): BaseMappingMethod {
     dataMapper.asAttrMap = (decodeKey: string) => {
       return {
         map: decodeKey,
@@ -290,7 +290,7 @@ export class BaseMapType {
       };
     };
 
-    return dataMapper;
+    return dataMapper as BaseMappingMethod;
   }
 
 }
