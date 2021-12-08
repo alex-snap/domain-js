@@ -92,7 +92,10 @@ export class AxiosResource implements BaseResource {
     return request
       .then((res) => this.handleResponse(res))
       .catch((error: AxiosError) => {
-        throw { _status: error.code, data: error };
+        if (this.defaultOptions?.handleError) {
+          this.defaultOptions.handleError({ response: error, parsedBody: error.response });
+        }
+        throw { _status: error?.response?.status || error?.code, data: error };
       })
   }
 

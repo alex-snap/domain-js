@@ -11,7 +11,6 @@ export interface FetchResourceOptions extends BaseResourceOptions {
   credentials?: RequestCredentials;
   redirect?: RequestRedirect;
   referrer?: 'no-referrer' | 'client';
-  handleError?: (payload: { response: Response; parsedBody: any }) => any;
   queryParams?: any;
   canSendRequest?: () => Promise<{ can: boolean; error: Error }>;
 }

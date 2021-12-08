@@ -1,6 +1,6 @@
 {
   "name": "@snap-alex/domain-js",
-  "version": "8.0.2",
+  "version": "8.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "description": "Generics classes for managing entities and collections by async requests",
