@@ -139,7 +139,7 @@ export class BaseRepository<Entity = BaseEntity, EntityList = ArrayMeta<Entity>,
     return result;
   }
 
-  protected processResponse(
+  public processResponse(
     response: ResourceResponse
   ): EntityMeta | ArrayMeta<Entity, Meta> | Entity | string {
     if (!response || typeof response !== 'object') {
