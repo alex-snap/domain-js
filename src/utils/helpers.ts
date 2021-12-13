@@ -146,7 +146,7 @@ export function transformToFormData(
       : property;
     if (value instanceof Date) {
       formData.append(formKey, (value as Date).toISOString());
-    } else if (isFile(value)) {
+    } else if (isValueObject(value)) {
       transformToFormData(value, formData, formKey);
     } else {
       formData.append(formKey, value);
@@ -155,9 +155,12 @@ export function transformToFormData(
   return formData;
 }
 
-export function isFile(value: any): boolean {
-  // todo realize for React Native
-  return typeof value === 'object'; //&& !(value instanceof File)
+export function isValueObject(value: any): boolean {
+  if (isReactNative()) {
+    return typeof value === 'object';
+  } else {
+    return typeof value === 'object' && !(value instanceof File);
+  }
 }
 
 export function resolveHeaders(options: FetchResourceOptions): {} {
@@ -172,4 +175,16 @@ export function resolveHeaders(options: FetchResourceOptions): {} {
   }
 
   return { ...options.headers, ...additionalHeaders };
+}
+
+export function isBrowser(): boolean {
+  return typeof document != 'undefined';
+}
+
+export function isReactNative(): boolean {
+  return typeof document == 'undefined' && typeof navigator != 'undefined' && navigator.product == 'ReactNative';
+}
+
+export function isNodeJS(): boolean {
+  return !isBrowser() && !isReactNative();
 }
