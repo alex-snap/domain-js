@@ -5,6 +5,8 @@ export * from './repository/DefaultRepositorySettings';
 export * from './BaseRepositoryBuilder';
 export * from './BaseRestResource';
 
+export * from './resources/BaseResource';
+
 export * from './resources/fetch/FetchResource';
 export * from './resources/fetch/FetchResourceOptions';
 export * from './resources/fetch/DefaultFetchResourceOptions';
@@ -19,7 +21,7 @@ export * from './resources/storage/StorageResourceOptions';
 
 export * from './data-mapper/index';
 
-export * from './interfaces/BaseResource';
+export * from './interfaces/IBaseResource';
 export * from './interfaces/Storage';
 export * from './interfaces/ArrayMeta';
 export * from './interfaces/BaseEntity';

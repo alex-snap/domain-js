@@ -3,7 +3,8 @@ import { DefaultFetchResourceOptions } from '../src/resources/fetch/DefaultFetch
 import 'whatwg-fetch';
 
 const timeOffset = new Date().getTimezoneOffset() * -1;
-const baseUrl = 'https://www.google.com/';
+const baseUrlString = 'https://www.google.com/';
+const baseUrlPromise = new Promise<string>(resolve => resolve(baseUrlString));
 
 const successResponse = new Response(JSON.stringify({ data: 'success' }), {
   status: 200,
@@ -21,16 +22,45 @@ const failedResponse = new Response(JSON.stringify({ data: 'failed' }), {
 
 describe('FetchResource', () => {
   let fetchResource: FetchResource;
+  let fetchResourceWithPromiseUrl: FetchResource;
   let fetchMock: jest.Mock;
   beforeEach(() => {
     fetchMock = jest.fn().mockResolvedValueOnce(successResponse).mockResolvedValue(failedResponse);
-    fetchResource = new FetchResource(baseUrl, undefined, fetchMock);
+    fetchResource = new FetchResource(baseUrlString, undefined, fetchMock);
+    fetchResourceWithPromiseUrl = new FetchResource(baseUrlPromise, undefined, fetchMock);
   });
 
   describe('FetchResource options', () => {
     it('trailing slash', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url`);
       const response = await fetchResource.post('test_url', { data: 1 }, { trailingSlash: false });
+      expect(fetchMock).toHaveBeenCalledWith(
+        expectedUrl,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ data: 1 }),
+        })
+      );
+      expect(response).toEqual(expect.objectContaining({ data: expect.anything() }));
+    });
+  });
+
+  describe('FetchResource base url', () => {
+    it('can be string', async () => {
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url`);
+      const response = await fetchResource.post('test_url', { data: 1 }, { trailingSlash: false });
+      expect(fetchMock).toHaveBeenCalledWith(
+        expectedUrl,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ data: 1 }),
+        })
+      );
+      expect(response).toEqual(expect.objectContaining({ data: expect.anything() }));
+    });
+    it('can be Promise<string>', async () => {
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url`);
+      const response = await fetchResourceWithPromiseUrl.post('test_url', { data: 1 }, { trailingSlash: false });
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
@@ -47,8 +77,9 @@ describe('FetchResource', () => {
       expect(fetchResource).toBeInstanceOf(FetchResource);
     });
 
-    it('should store base url', () => {
-      expect((fetchResource as any).baseUrl).toBe(baseUrl);
+    it('should store base url', async () => {
+      const baseUrl = await fetchResource.getBaseUrl();
+      expect(baseUrl).toBe(baseUrlString);
     });
 
     it('should contain default options', () => {
@@ -61,7 +92,7 @@ describe('FetchResource', () => {
       expect(fetchResource.post).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url/`);
       const response = await fetchResource.post('test_url', { data: 1 });
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
@@ -90,7 +121,7 @@ describe('FetchResource', () => {
       expect(fetchResource.put).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url/`);
       const response = await fetchResource.put('test_url', { data: 1 });
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
@@ -122,7 +153,7 @@ describe('FetchResource', () => {
       expect(fetchResource.patch).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url/`);
       const response = await fetchResource.patch('test_url', { data: 1 });
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
@@ -154,7 +185,7 @@ describe('FetchResource', () => {
       expect(fetchResource.get).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url/`);
       const response = await fetchResource.get('test_url');
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
@@ -177,7 +208,7 @@ describe('FetchResource', () => {
       );
     });
     it('should pass query params in request', async () => {
-      const queryString = `${baseUrl}test_url/?page=1&per_page=10&array=1,2,3&timeoffset=${timeOffset}`;
+      const queryString = `${baseUrlString}test_url/?page=1&per_page=10&array=1,2,3&timeoffset=${timeOffset}`;
       const expectedUrl = expect.stringContaining(queryString);
       await fetchResource.get('test_url', {
         page: 1,
@@ -190,7 +221,7 @@ describe('FetchResource', () => {
       );
     });
     it('should pass query params array as array in request', async () => {
-      const queryString = `${baseUrl}test_url/?page=1&per_page=10&array[]=1&array[]=2&array[]=3&timeoffset=${timeOffset}`;
+      const queryString = `${baseUrlString}test_url/?page=1&per_page=10&array[]=1&array[]=2&array[]=3&timeoffset=${timeOffset}`;
       const expectedUrl = expect.stringContaining(queryString);
       await fetchResource.get(
         'test_url',
@@ -213,7 +244,7 @@ describe('FetchResource', () => {
       expect(fetchResource.delete).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url/`);
       const response = await fetchResource.delete('test_url');
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,
@@ -252,7 +283,7 @@ describe('FetchResource', () => {
     it('should send headers on each request', async () => {
       const headers = { Authorization: 'X' };
       fetchResource.setHeaders(headers);
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url/`);
       await fetchResource.get('test_url');
       expect(fetchMock).toHaveBeenCalledWith(
         expectedUrl,

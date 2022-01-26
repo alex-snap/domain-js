@@ -1,8 +1,8 @@
 import { BaseRestResource } from '../src/BaseRestResource';
-import { BaseResource } from '../src/interfaces/BaseResource';
+import { IBaseResource } from '../src/interfaces/IBaseResource';
 
 let testRestResource: BaseRestResource;
-let fakeFetchResource: BaseResource;
+let fakeFetchResource: IBaseResource;
 const successResponseData = { data: 'success', _status: 200 };
 const resourceRelativePath = 'test';
 const resourceChildPath = 'test/child/';

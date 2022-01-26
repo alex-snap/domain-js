@@ -1,28 +1,30 @@
-import { BaseResource } from '../../interfaces/BaseResource';
+import { IBaseResource } from '../../interfaces/IBaseResource';
 import { FetchResourceOptions } from './FetchResourceOptions';
 import { DefaultFetchResourceOptions } from './DefaultFetchResourceOptions';
 import { FetchRequestMethod } from './FetchRequestMethod';
 import { createRequestOptions, extractResponseContent, resolveFetchRequestBody } from './helpers';
 import { decodeQueryString, } from '../../utils';
 import { ResourceResponse } from '../../interfaces/ResourceResponse';
+import { BaseResource } from "../BaseResource";
 
-export class FetchResource implements BaseResource {
+export class FetchResource extends BaseResource implements IBaseResource {
   protected defaultOptions: FetchResourceOptions;
 
   constructor(
-    protected baseUrl: string,
+    baseUrl: string | Promise<string>,
     defaultOptions?: FetchResourceOptions,
     protected _fetchClient?: typeof fetch,
   ) {
+    super(baseUrl);
     this.defaultOptions = { ...DefaultFetchResourceOptions, ...defaultOptions };
   }
 
-  public post(
+  public async post(
     url: string,
     body?: Record<string, any>,
     options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
-    const { requestUrl, requestOptions } = this.createRequest({
+    const { requestUrl, requestOptions } = await this.createRequest({
       method: 'POST',
       url,
       options,
@@ -31,12 +33,12 @@ export class FetchResource implements BaseResource {
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
-  public put(
+  public async put(
     url: string,
     body?: Record<string, any>,
     options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
-    const { requestUrl, requestOptions } = this.createRequest({
+    const { requestUrl, requestOptions } = await this.createRequest({
       method: 'PUT',
       url,
       options,
@@ -45,12 +47,12 @@ export class FetchResource implements BaseResource {
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
-  public patch(
+  public async patch(
     url: string,
     body?: Record<string, any>,
     options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
-    const { requestUrl, requestOptions } = this.createRequest({
+    const { requestUrl, requestOptions } = await this.createRequest({
       method: 'PATCH',
       url,
       options,
@@ -59,12 +61,12 @@ export class FetchResource implements BaseResource {
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
-  public get(
+  public async get(
     url: string,
     queryParams?: Record<string, any>,
     options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
-    const { requestUrl, requestOptions } = this.createRequest({
+    const { requestUrl, requestOptions } = await this.createRequest({
       method: 'GET',
       url,
       options: { ...options, queryParams },
@@ -72,12 +74,12 @@ export class FetchResource implements BaseResource {
     return this.fetchHandleCode(requestUrl, requestOptions);
   }
 
-  public delete(
+  public async delete(
     url: string,
     body?: Record<string, any>,
     options?: FetchResourceOptions
   ): Promise<ResourceResponse> {
-    const { requestUrl, requestOptions } = this.createRequest({
+    const { requestUrl, requestOptions } = await this.createRequest({
       method: 'DELETE',
       url,
       options,
@@ -94,8 +96,8 @@ export class FetchResource implements BaseResource {
     delete this.defaultOptions.headers;
   }
 
-  public setBasePath(baseUrl: string) {
-    this.baseUrl = baseUrl;
+  public setBasePath(baseUrl: string | Promise<string>): void {
+    this.setUrlSource(baseUrl);
   }
 
   public resolveDestination(pathParts: Array<number | string>, basePath: string): string {
@@ -140,15 +142,15 @@ export class FetchResource implements BaseResource {
     });
   }
 
-  private createRequest(data: {
+  private async createRequest(data: {
     method: FetchRequestMethod;
     url: string;
     options?: FetchResourceOptions;
     body?: any;
-  }): { requestUrl: string; requestOptions: RequestInit } {
+  }): Promise<{ requestUrl: string; requestOptions: RequestInit }> {
     const { method, url, options, body } = data;
     const mergedOptions = this.resolveRequestOptions(options);
-    let requestUrl = this.resolveRequestUrl(url, mergedOptions);
+    let requestUrl = await this.resolveRequestUrl(url, mergedOptions);
     const decodedBody = resolveFetchRequestBody(body, options);
     const requestOptions = createRequestOptions(method, mergedOptions, decodedBody);
     const query = this.getQueryString(options?.queryParams, options);
@@ -156,12 +158,10 @@ export class FetchResource implements BaseResource {
     return { requestUrl, requestOptions };
   }
 
-  private resolveRequestUrl(url: string, o?: FetchResourceOptions): string {
-    if (this.baseUrl == null) {
-      throw new Error('BaseHttpResource#resolveRequestUrl: baseUrl is not defined');
-    }
+  private async resolveRequestUrl(url: string, o?: FetchResourceOptions): Promise<string> {
+    const baseUrl = await this.getBaseUrl();
     const urlPart = `/${url}${o?.trailingSlash ? '/' : ''}`;
-    return (this.baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
+    return (baseUrl + urlPart).replace(/([^:]\/)\/+/g, '$1');
   }
 
   private resolveRequestOptions(options: FetchResourceOptions) {

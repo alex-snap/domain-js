@@ -1,4 +1,4 @@
-import { BaseResource } from './interfaces/BaseResource';
+import { IBaseResource } from './interfaces/IBaseResource';
 import { ResourceResponse } from "./interfaces/ResourceResponse";
 import {FetchResourceOptions} from "./resources/fetch/FetchResourceOptions";
 import {AxiosResourceOptions} from "./resources/axios/AxiosResourceOptions";
@@ -11,7 +11,7 @@ export class BaseRestResource {
   protected Constructor = BaseRestResource;
 
   constructor(
-    private resource: BaseResource,
+    private resource: IBaseResource,
     private resourceUrl: string,
     private options?: BaseRestResourceOptions
   ) {}
@@ -41,7 +41,7 @@ export class BaseRestResource {
     return new this.Constructor(this.resource, baseUrl, this.options);
   }
 
-  public getRequestResource(): BaseResource {
+  public getRequestResource(): IBaseResource {
     return this.resource;
   }
 

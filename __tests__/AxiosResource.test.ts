@@ -3,14 +3,17 @@ import axios from 'axios';
 import { createSuccessAxiosResponse } from '../test-utils/axios';
 import { AxiosResource } from '../src/resources/axios/AxiosResource';
 import { DefaultAxiosResourceOptions } from "../src/resources/axios/DefaultAxiosResourceOptions";
-const baseUrl = 'https://www.google.com/';
+const baseUrlString = 'https://www.google.com/';
+const baseUrlPromise = new Promise<string>(resolve => resolve(baseUrlString));
 
 jest.mock('axios');
 
 describe('AxiosResource', () => {
   let axiosResource: AxiosResource;
+  let axiosResourceWithPromiseUrl: AxiosResource;
   beforeEach(() => {
-    axiosResource = new AxiosResource(baseUrl, undefined);
+    axiosResource = new AxiosResource(baseUrlString, undefined);
+    axiosResourceWithPromiseUrl = new AxiosResource(baseUrlPromise, undefined);
     (axios.post as jest.Mock).mockClear();
     (axios.get as jest.Mock).mockClear();
     (axios.patch as jest.Mock).mockClear();
@@ -19,7 +22,7 @@ describe('AxiosResource', () => {
 
   describe('Check options', () => {
     it('without trailing slash', async () => {
-      const expectedUrl = expect.stringMatching(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringMatching(`${baseUrlString}test_url`);
       (axios.post as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       await axiosResource.post('test_url', { data: 1 }, { trailingSlash: false })
       expect(axios.post).toHaveBeenCalledWith(
@@ -33,9 +36,40 @@ describe('AxiosResource', () => {
       );
     });
     it('with trailing slash', async () => {
-      const expectedUrl = expect.stringMatching(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringMatching(`${baseUrlString}test_url/`);
       (axios.post as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       await axiosResource.post('test_url', { data: 1 }, { trailingSlash: true })
+      expect(axios.post).toHaveBeenCalledWith(
+        expectedUrl,
+        expect.objectContaining({
+          data: 1,
+        }),
+        expect.objectContaining({
+          responseType: "json",
+        })
+      );
+    });
+  });
+
+  describe('Check Base url', () => {
+    it('can be string', async () => {
+      const expectedUrl = expect.stringMatching(`${baseUrlString}test_url`);
+      (axios.post as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
+      await axiosResource.post('test_url', { data: 1 }, { trailingSlash: false })
+      expect(axios.post).toHaveBeenCalledWith(
+        expectedUrl,
+        expect.objectContaining({
+          data: 1,
+        }),
+        expect.objectContaining({
+          responseType: "json",
+        })
+      );
+    });
+    it('can be Promise<string>', async () => {
+      const expectedUrl = expect.stringMatching(`${baseUrlString}test_url`);
+      (axios.post as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
+      await axiosResourceWithPromiseUrl.post('test_url', { data: 1 }, { trailingSlash: false })
       expect(axios.post).toHaveBeenCalledWith(
         expectedUrl,
         expect.objectContaining({
@@ -53,8 +87,9 @@ describe('AxiosResource', () => {
       expect(axiosResource).toBeInstanceOf(AxiosResource);
     });
 
-    it('should store base url', () => {
-      expect((axiosResource as any).baseUrl).toBe(baseUrl);
+    it('should store base url', async () => {
+      const baseUrl = await axiosResource.getBaseUrl();
+      expect(baseUrl).toBe(baseUrl);
     });
 
     it('should contain default options', () => {
@@ -67,7 +102,7 @@ describe('AxiosResource', () => {
       expect(axiosResource.post).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringMatching(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringMatching(`${baseUrlString}test_url`);
       (axios.post as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       const response = await axiosResource.post('test_url', { data: 1 });
       expect(axios.post).toHaveBeenCalledWith(
@@ -95,7 +130,7 @@ describe('AxiosResource', () => {
       expect(axiosResource.put).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url`);
       (axios.put as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       const response = await axiosResource.put('test_url', { data: 1 });
       expect(axios.put).toHaveBeenCalledWith(
@@ -126,7 +161,7 @@ describe('AxiosResource', () => {
       expect(axiosResource.patch).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url`);
       (axios.patch as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       const response = await axiosResource.patch('test_url', { data: 1 });
       expect(axios.patch).toHaveBeenCalledWith(
@@ -160,7 +195,7 @@ describe('AxiosResource', () => {
       expect(axiosResource.get).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url`);
       (axios.get as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       const response = await axiosResource.get('test_url');
       expect(axios.get).toHaveBeenCalledWith(
@@ -184,7 +219,7 @@ describe('AxiosResource', () => {
       );
     });
     it('should pass query params in request', async () => {
-      const queryString = `${baseUrl}test_url`;
+      const queryString = `${baseUrlString}test_url`;
       const expectedUrl = expect.stringContaining(queryString);
       (axios.get as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       await axiosResource.get('test_url', {
@@ -207,7 +242,7 @@ describe('AxiosResource', () => {
       );
     });
     it('should pass query params array as array in request', async () => {
-      const queryString = `${baseUrl}test_url`;
+      const queryString = `${baseUrlString}test_url`;
       // const queryString = `${baseUrl}test_url/?page=1&per_page=10&array[]=1&array[]=2&array[]=3&timeoffset=${timeOffset}`;
       const expectedUrl = expect.stringContaining(queryString);
       (axios.get as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
@@ -243,7 +278,7 @@ describe('AxiosResource', () => {
       expect(axiosResource.delete).toBeInstanceOf(Function);
     });
     it('should receive success response', async () => {
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url/`);
       (axios.delete as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       const response = await axiosResource.delete('test_url');
       expect(axios.delete).toHaveBeenCalledWith(
@@ -289,7 +324,7 @@ describe('AxiosResource', () => {
     it('should send headers on each request', async () => {
       const headers = { Authorization: 'X' };
       axiosResource.setHeaders(headers);
-      const expectedUrl = expect.stringContaining(`${baseUrl}test_url/`);
+      const expectedUrl = expect.stringContaining(`${baseUrlString}test_url/`);
       (axios.get as jest.Mock).mockReturnValue(Promise.resolve(createSuccessAxiosResponse({ data: 'any' })));
       await axiosResource.get('test_url');
       expect(axios.get).toHaveBeenCalledWith(

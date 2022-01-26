@@ -188,3 +188,7 @@ export function isReactNative(): boolean {
 export function isNodeJS(): boolean {
   return !isBrowser() && !isReactNative();
 }
+
+export function isPromise(promise: any): boolean {
+  return !!promise && typeof promise.then === 'function'
+}
