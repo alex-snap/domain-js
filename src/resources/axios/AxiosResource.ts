@@ -6,12 +6,14 @@ import { AxiosResourceOptions } from './AxiosResourceOptions';
 import { DefaultAxiosResourceOptions } from './DefaultAxiosResourceOptions';
 import { ResourceResponse } from '../../interfaces/ResourceResponse';
 import { resolveAxiosRequestBody } from "./helpers";
-import {BaseResource} from "../BaseResource";
+import { BaseResource } from "../BaseResource";
+
+type PromiseUrlResolver = () => Promise<string>;
 
 export class AxiosResource extends BaseResource implements IBaseResource {
 
   constructor(
-    baseUrl: string | Promise<string>,
+    baseUrl: string | PromiseUrlResolver,
     private defaultOptions: AxiosResourceOptions = DefaultAxiosResourceOptions) {
     super(baseUrl);
   }
@@ -57,7 +59,7 @@ export class AxiosResource extends BaseResource implements IBaseResource {
     delete this.defaultOptions.headers;
   }
 
-  public setBasePath(urlSource: string | Promise<String>): void {
+  public setBasePath(urlSource: string | PromiseUrlResolver): void {
     this.setUrlSource(urlSource);
   }
 

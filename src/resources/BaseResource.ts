@@ -1,12 +1,13 @@
-import {isPromise} from "../utils";
+import { isFunction } from "../utils";
+import { PromiseUrlResolver } from "./PromiseUrlResolver";
 
 export class BaseResource {
-  constructor(protected urlSource: string | Promise<String>) {
+  constructor(protected urlSource: string | PromiseUrlResolver) {
   }
 
   public getBaseUrl(): Promise<string> {
-    if (isPromise(this.urlSource)) {
-      return this.urlSource as Promise<string>;
+    if (isFunction(this.urlSource)) {
+      return this.urlSource() as Promise<string>;
     } else if (typeof this.urlSource === 'string') {
       return new Promise<string>(resolve => resolve(this.urlSource as string));
     } else {
@@ -14,7 +15,7 @@ export class BaseResource {
     }
   }
 
-  public setUrlSource(urlSource: string | Promise<String>): void {
+  public setUrlSource(urlSource: string | PromiseUrlResolver): void {
     this.urlSource = urlSource;
   }
 }

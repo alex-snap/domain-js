@@ -4,7 +4,7 @@ import { createSuccessAxiosResponse } from '../test-utils/axios';
 import { AxiosResource } from '../src/resources/axios/AxiosResource';
 import { DefaultAxiosResourceOptions } from "../src/resources/axios/DefaultAxiosResourceOptions";
 const baseUrlString = 'https://www.google.com/';
-const baseUrlPromise = new Promise<string>(resolve => resolve(baseUrlString));
+const baseUrlPromise = () => new Promise<string>(resolve => resolve(baseUrlString));
 
 jest.mock('axios');
 

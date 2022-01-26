@@ -6,12 +6,13 @@ import { createRequestOptions, extractResponseContent, resolveFetchRequestBody }
 import { decodeQueryString, } from '../../utils';
 import { ResourceResponse } from '../../interfaces/ResourceResponse';
 import { BaseResource } from "../BaseResource";
+import { PromiseUrlResolver } from "../PromiseUrlResolver";
 
 export class FetchResource extends BaseResource implements IBaseResource {
   protected defaultOptions: FetchResourceOptions;
 
   constructor(
-    baseUrl: string | Promise<string>,
+    baseUrl: string | PromiseUrlResolver,
     defaultOptions?: FetchResourceOptions,
     protected _fetchClient?: typeof fetch,
   ) {
@@ -96,7 +97,7 @@ export class FetchResource extends BaseResource implements IBaseResource {
     delete this.defaultOptions.headers;
   }
 
-  public setBasePath(baseUrl: string | Promise<string>): void {
+  public setBasePath(baseUrl: string | PromiseUrlResolver): void {
     this.setUrlSource(baseUrl);
   }
 

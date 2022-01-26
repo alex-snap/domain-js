@@ -4,7 +4,7 @@ import 'whatwg-fetch';
 
 const timeOffset = new Date().getTimezoneOffset() * -1;
 const baseUrlString = 'https://www.google.com/';
-const baseUrlPromise = new Promise<string>(resolve => resolve(baseUrlString));
+const baseUrlPromise = () => new Promise<string>(resolve => resolve(baseUrlString));
 
 const successResponse = new Response(JSON.stringify({ data: 'success' }), {
   status: 200,
