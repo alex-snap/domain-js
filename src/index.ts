@@ -24,9 +24,9 @@ export * from './data-mapper/index';
 export * from './interfaces/IBaseResource';
 export * from './interfaces/Storage';
 export * from './interfaces/ArrayMeta';
-export * from './interfaces/BaseEntity';
+export * from './types/BaseEntity';
 export * from './interfaces/BaseMeta';
 export * from './interfaces/EntityMeta';
-export * from './interfaces/ResourceResponse';
+export * from './types/ResourceResponse';
 
 export * from './enums/ContentTypeEnum';

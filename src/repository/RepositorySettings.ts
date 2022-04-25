@@ -1,4 +1,4 @@
-import { ResourceResponse } from '../interfaces/ResourceResponse';
+import { ResourceResponse } from '../types/ResourceResponse';
 
 export interface RepositorySettings {
   extractResponseData?: (response: ResourceResponse) => any;

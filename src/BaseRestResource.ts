@@ -1,5 +1,5 @@
 import { IBaseResource } from './interfaces/IBaseResource';
-import { ResourceResponse } from "./interfaces/ResourceResponse";
+import { ResourceResponse } from "./types/ResourceResponse";
 import {FetchResourceOptions} from "./resources/fetch/FetchResourceOptions";
 import {AxiosResourceOptions} from "./resources/axios/AxiosResourceOptions";
 

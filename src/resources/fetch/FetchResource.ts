@@ -3,21 +3,27 @@ import { FetchResourceOptions } from './FetchResourceOptions';
 import { DefaultFetchResourceOptions } from './DefaultFetchResourceOptions';
 import { FetchRequestMethod } from './FetchRequestMethod';
 import { createRequestOptions, extractResponseContent, resolveFetchRequestBody } from './helpers';
-import { decodeQueryString, } from '../../utils';
-import { ResourceResponse } from '../../interfaces/ResourceResponse';
+import {decodeQueryString, isBrowser,} from '../../utils';
+import { ResourceResponse } from '../../types/ResourceResponse';
 import { BaseResource } from "../BaseResource";
-import { PromiseUrlResolver } from "../PromiseUrlResolver";
+import { PromiseUrlResolver } from "../../types/PromiseUrlResolver";
 
 export class FetchResource extends BaseResource implements IBaseResource {
   protected defaultOptions: FetchResourceOptions;
+  protected _fetchClient!: typeof fetch;
 
   constructor(
     baseUrl: string | PromiseUrlResolver,
     defaultOptions?: FetchResourceOptions,
-    protected _fetchClient?: typeof fetch,
+    _fetchClient?: typeof fetch,
   ) {
     super(baseUrl);
     this.defaultOptions = { ...DefaultFetchResourceOptions, ...defaultOptions };
+    if (_fetchClient) {
+      this._fetchClient = _fetchClient;
+    } else if (isBrowser() && !_fetchClient) {
+      this._fetchClient = fetch.bind(window);
+    }
   }
 
   public async post(
@@ -131,9 +137,7 @@ export class FetchResource extends BaseResource implements IBaseResource {
           if (response.ok) {
             resolve(data);
           } else {
-            if (this.defaultOptions?.handleError) {
-              this.defaultOptions.handleError({ response, parsedBody: data });
-            }
+            this.notifyErrorHandlers({ response, parsedBody: data });
             reject(data);
           }
         })

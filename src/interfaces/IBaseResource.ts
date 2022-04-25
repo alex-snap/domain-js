@@ -1,5 +1,5 @@
 import { BaseResourceOptions } from "./BaseResourceOptions";
-import { ResourceResponse } from "./ResourceResponse";
+import { ResourceResponse } from "../types/ResourceResponse";
 
 export interface IBaseResource {
   post(path: string, body: any, options?: BaseResourceOptions): Promise<ResourceResponse>;

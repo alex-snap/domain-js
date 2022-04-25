@@ -1,7 +1,7 @@
 import { BaseRestResource } from './BaseRestResource';
 import { BaseDataMapper } from './data-mapper/index';
 import { Constructor } from './utils/Constructor';
-import { BaseEntity } from './interfaces/BaseEntity';
+import { BaseEntity } from './types/BaseEntity';
 import { BaseMeta } from './interfaces/BaseMeta';
 import { BaseRepository } from './repository/BaseRepository';
 
