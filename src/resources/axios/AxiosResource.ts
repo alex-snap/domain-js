@@ -4,7 +4,7 @@ import { decodeQueryString, resolveHeaders } from '../../utils/helpers';
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { AxiosResourceOptions } from './AxiosResourceOptions';
 import { DefaultAxiosResourceOptions } from './DefaultAxiosResourceOptions';
-import { ResourceResponse } from '../../interfaces/ResourceResponse';
+import { ResourceResponse } from '../../types/ResourceResponse';
 import { resolveAxiosRequestBody } from "./helpers";
 import { BaseResource } from "../BaseResource";
 
@@ -96,9 +96,7 @@ export class AxiosResource extends BaseResource implements IBaseResource {
     return request
       .then((res) => this.handleResponse(res))
       .catch((error: AxiosError) => {
-        if (this.defaultOptions?.handleError) {
-          this.defaultOptions.handleError({ response: error, parsedBody: error.response });
-        }
+        this.notifyErrorHandlers({ response: error, parsedBody: error.response });
         throw { _status: error?.response?.status || error?.code, data: error };
       })
   }

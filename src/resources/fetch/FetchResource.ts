@@ -4,9 +4,9 @@ import { DefaultFetchResourceOptions } from './DefaultFetchResourceOptions';
 import { FetchRequestMethod } from './FetchRequestMethod';
 import { createRequestOptions, extractResponseContent, resolveFetchRequestBody } from './helpers';
 import {decodeQueryString, isBrowser,} from '../../utils';
-import { ResourceResponse } from '../../interfaces/ResourceResponse';
+import { ResourceResponse } from '../../types/ResourceResponse';
 import { BaseResource } from "../BaseResource";
-import { PromiseUrlResolver } from "../PromiseUrlResolver";
+import { PromiseUrlResolver } from "../../types/PromiseUrlResolver";
 
 export class FetchResource extends BaseResource implements IBaseResource {
   protected defaultOptions: FetchResourceOptions;
@@ -137,9 +137,7 @@ export class FetchResource extends BaseResource implements IBaseResource {
           if (response.ok) {
             resolve(data);
           } else {
-            if (this.defaultOptions?.handleError) {
-              this.defaultOptions.handleError({ response, parsedBody: data });
-            }
+            this.notifyErrorHandlers({ response, parsedBody: data });
             reject(data);
           }
         })
