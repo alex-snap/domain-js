@@ -45,7 +45,8 @@ export async function extractResponseContent(
 ): Promise<{ [key: string]: any } | string> {
   const responseContentType = response.headers.get('content-type') || '';
   if (responseContentType.indexOf('application/json') > -1) {
-    return response.json<Record<string | number | symbol, any>>();
+    const responseCopy = response.clone();
+    return response.json<Record<string | number | symbol, any>>().catch((e) => responseCopy.text());
   } else if (responseContentType.indexOf('application/octet-stream') > -1) {
     return extractBlobContent(await response.blob());
   } else if (responseContentType.indexOf('multipart/form-data') > -1) {
