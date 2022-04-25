@@ -13,6 +13,5 @@ export const DefaultFetchResourceOptions: FetchResourceOptions = {
   redirect: 'follow',
   referrer: 'client',
   timeOffset: true,
-  handleError: undefined,
   queryParamsDecodeMode: 'comma',
 };
