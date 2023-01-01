@@ -37,10 +37,10 @@
     "jest": "^25.1.0",
     "jest-cli": "^26.6.3",
     "ts-jest": "^25.5.1",
-    "ts-loader": "^6.2.1",
+    "ts-loader": "^9.4.2",
     "typescript": "^3.9.10",
-    "webpack": "^4.46.0",
-    "webpack-cli": "^3.3.11",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
     "whatwg-fetch": "^3.6.2"
   },
   "engines": {
